@@ -66,12 +66,12 @@ def response_for_exception(request, exc):
             response = debug.technical_404_response(request, exc)
         else:
             response = get_exception_response(
-                request, get_resolver(get_urlconf()), 404, exc
+                request, get_resolver(get_urlconf(), log=True), 404, exc
             )
 
     elif isinstance(exc, PermissionDenied):
         response = get_exception_response(
-            request, get_resolver(get_urlconf()), 403, exc
+            request, get_resolver(get_urlconf(), log=True), 403, exc
         )
         log_response(
             "Forbidden (Permission denied): %s",
@@ -83,7 +83,7 @@ def response_for_exception(request, exc):
 
     elif isinstance(exc, MultiPartParserError):
         response = get_exception_response(
-            request, get_resolver(get_urlconf()), 400, exc
+            request, get_resolver(get_urlconf(), log=True), 400, exc
         )
         log_response(
             "Bad request (Unable to parse request body): %s",
@@ -100,7 +100,7 @@ def response_for_exception(request, exc):
             )
         else:
             response = get_exception_response(
-                request, get_resolver(get_urlconf()), 400, exc
+                request, get_resolver(get_urlconf(), log=True), 400, exc
             )
         log_response(
             "%s: %s",
@@ -132,13 +132,13 @@ def response_for_exception(request, exc):
             )
         else:
             response = get_exception_response(
-                request, get_resolver(get_urlconf()), 400, exc
+                request, get_resolver(get_urlconf(), log=True), 400, exc
             )
 
     else:
         signals.got_request_exception.send(sender=None, request=request)
         response = handle_uncaught_exception(
-            request, get_resolver(get_urlconf()), sys.exc_info()
+            request, get_resolver(get_urlconf(), log=True), sys.exc_info()
         )
         log_response(
             "%s: %s",

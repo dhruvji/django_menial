@@ -306,9 +306,9 @@ class BaseHandler:
         if hasattr(request, "urlconf"):
             urlconf = request.urlconf
             set_urlconf(urlconf)
-            resolver = get_resolver(urlconf)
+            resolver = get_resolver(urlconf, log=True)
         else:
-            resolver = get_resolver()
+            resolver = get_resolver(log=True)
         # Resolve the view, and assign the match object back to the request.
         resolver_match = resolver.resolve(request.path_info)
         request.resolver_match = resolver_match

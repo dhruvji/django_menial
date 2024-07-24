@@ -530,7 +530,7 @@ class ResolverTests(SimpleTestCase):
         (#17892).
         """
         # Pick a resolver from a namespaced URLconf
-        resolver = get_resolver("urlpatterns_reverse.namespace_urls")
+        resolver = get_resolver("urlpatterns_reverse.namespace_urls", log=False)
         sub_resolver = resolver.namespace_dict["test-ns1"][1]
         self.assertIn("<URLPattern list>", repr(sub_resolver))
 
@@ -541,11 +541,11 @@ class ResolverTests(SimpleTestCase):
         """
         urls = "urlpatterns_reverse.named_urls"
         proxy_url = reverse_lazy("named-url1", urlconf=urls)
-        resolver = get_resolver(urls)
+        resolver = get_resolver(urls, log=False)
         resolver.resolve(proxy_url)
 
     def test_resolver_reverse(self):
-        resolver = get_resolver("urlpatterns_reverse.named_urls")
+        resolver = get_resolver("urlpatterns_reverse.named_urls", log=False)
         test_urls = [
             # (name, args, kwargs, expected)
             ("named-url1", (), {}, ""),
@@ -561,7 +561,7 @@ class ResolverTests(SimpleTestCase):
         URL pattern name arguments don't need to be unique. The last registered
         pattern takes precedence for conflicting names.
         """
-        resolver = get_resolver("urlpatterns_reverse.named_urls_conflict")
+        resolver = get_resolver("urlpatterns_reverse.named_urls_conflict", log=False)
         test_urls = [
             # (name, args, kwargs, expected)
             # Without arguments, the last URL in urlpatterns has precedence.
@@ -642,7 +642,7 @@ class ResolverTests(SimpleTestCase):
                             )
 
     def test_namespaced_view_detail(self):
-        resolver = get_resolver("urlpatterns_reverse.nested_urls")
+        resolver = get_resolver("urlpatterns_reverse.nested_urls", log=False)
         self.assertTrue(resolver._is_callback("urlpatterns_reverse.nested_urls.view1"))
         self.assertTrue(resolver._is_callback("urlpatterns_reverse.nested_urls.view2"))
         self.assertTrue(resolver._is_callback("urlpatterns_reverse.nested_urls.View3"))
@@ -650,7 +650,7 @@ class ResolverTests(SimpleTestCase):
 
     def test_view_detail_as_method(self):
         # Views which have a class name as part of their path.
-        resolver = get_resolver("urlpatterns_reverse.method_view_urls")
+        resolver = get_resolver("urlpatterns_reverse.method_view_urls", log=False)
         self.assertTrue(
             resolver._is_callback(
                 "urlpatterns_reverse.method_view_urls.ViewContainer.method_view"

@@ -143,7 +143,7 @@ class ViewIndexView(BaseAdminDocsView):
 
     def get_context_data(self, **kwargs):
         views = []
-        url_resolver = get_resolver(get_urlconf())
+        url_resolver = get_resolver(get_urlconf(), log=True)
         try:
             view_functions = extract_views_from_urlpatterns(url_resolver.url_patterns)
         except ImproperlyConfigured:
@@ -167,7 +167,7 @@ class ViewDetailView(BaseAdminDocsView):
     @staticmethod
     def _get_view_func(view):
         urlconf = get_urlconf()
-        if get_resolver(urlconf)._is_callback(view):
+        if get_resolver(urlconf, log=True)._is_callback(view):
             mod, func = get_mod_func(view)
             try:
                 # Separate the module and function, e.g.

@@ -21,13 +21,13 @@ _urlconfs = Local()
 def resolve(path, urlconf=None):
     if urlconf is None:
         urlconf = get_urlconf()
-    return get_resolver(urlconf).resolve(path)
+    return get_resolver(urlconf, log=True).resolve(path)
 
 
 def reverse(viewname, urlconf=None, args=None, kwargs=None, current_app=None):
     if urlconf is None:
         urlconf = get_urlconf()
-    resolver = get_resolver(urlconf)
+    resolver = get_resolver(urlconf, log=True)
     args = args or []
     kwargs = kwargs or {}
 

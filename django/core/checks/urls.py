@@ -12,7 +12,7 @@ def check_url_config(app_configs, **kwargs):
     if getattr(settings, "ROOT_URLCONF", None):
         from django.urls import get_resolver
 
-        resolver = get_resolver()
+        resolver = get_resolver(log=True)
         return check_resolver(resolver)
     return []
 
@@ -40,7 +40,7 @@ def check_url_namespaces_unique(app_configs, **kwargs):
 
     from django.urls import get_resolver
 
-    resolver = get_resolver()
+    resolver = get_resolver(log=True)
     all_namespaces = _load_all_namespaces(resolver)
     counter = Counter(all_namespaces)
     non_unique_namespaces = [n for n, count in counter.items() if count > 1]
@@ -126,7 +126,7 @@ def check_custom_error_handlers(app_configs, **kwargs):
 
     from django.urls import get_resolver
 
-    resolver = get_resolver()
+    resolver = get_resolver(log=True)
 
     errors = []
     # All handlers take (request, exception) arguments except handler500

@@ -10,6 +10,7 @@ import functools
 import inspect
 import re
 import string
+import logging
 from importlib import import_module
 from pickle import PicklingError
 from urllib.parse import quote
@@ -105,10 +106,18 @@ class ResolverMatch:
         raise PicklingError(f"Cannot pickle {self.__class__.__qualname__}.")
 
 
-def get_resolver(urlconf=None):
+def get_resolver(urlconf=None, log=False):
+    logger = logging.getLogger(__name__)
+    if log:
+        logger.info(f"Getting resolver for urlconf: {urlconf}")
     if urlconf is None:
         urlconf = settings.ROOT_URLCONF
-    return _get_cached_resolver(urlconf)
+        if log:
+            logger.info(f"Urlconf was None, using ROOT_URLCONF: {urlconf}")
+    resolver = _get_cached_resolver(urlconf)
+    if log:
+        logger.info(f"Resolver obtained: {resolver}")
+    return resolver
 
 
 @functools.cache

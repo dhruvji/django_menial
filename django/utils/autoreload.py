@@ -334,7 +334,7 @@ class BaseReloader:
         # Prevent a race condition where URL modules aren't loaded when the
         # reloader starts by accessing the urlconf_module property.
         try:
-            get_resolver().urlconf_module
+            get_resolver(log=True).urlconf_module
         except Exception:
             # Loading the urlconf can result in errors during development.
             # If this occurs then swallow the error and continue.
