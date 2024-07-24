@@ -1,7 +1,7 @@
 Add logging to get_resolver through a boolean parameter and update all calls of get_resolver to have log as True,
  except for in the django tests, where logging for get resolver should be false.
 
- modified:   django/conf/urls/i18n.py
+        modified:   django/conf/urls/i18n.py
         modified:   django/contrib/admindocs/views.py
         modified:   django/core/checks/urls.py
         modified:   django/core/handlers/base.py
