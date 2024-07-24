@@ -10,6 +10,7 @@ import functools
 import inspect
 import re
 import string
+import logging
 from importlib import import_module
 from pickle import PicklingError
 from urllib.parse import quote
@@ -728,15 +729,22 @@ class URLResolver:
             raise ImproperlyConfigured(msg.format(name=self.urlconf_name)) from e
         return patterns
 
-    def resolve_error_handler(self, view_type):
-        callback = getattr(self.urlconf_module, "handler%s" % view_type, None)
+    def resolve_error_handler(self, view_type, log=False):
+        if log:
+            logger = logging.getLogger(__name__)
+            logger.info(f"Resolving error handler for view_type: {view_type}")
+        callback = getattr(self.urlconf_module, f"handler{view_type}", None)
         if not callback:
             # No handler specified in file; use lazy import, since
             # django.conf.urls imports this file.
             from django.conf import urls
-
-            callback = getattr(urls, "handler%s" % view_type)
-        return get_callable(callback)
+            callback = getattr(urls, f"handler{view_type}")
+            if log:
+                logger.info(f"Handler not found in urlconf_module, using default from django.conf.urls")
+        resolved_callback = get_callable(callback)
+        if log:
+            logger.info(f"Resolved callback: {resolved_callback}")
+        return resolved_callback
 
     def reverse(self, lookup_view, *args, **kwargs):
         return self._reverse_with_prefix(lookup_view, "", *args, **kwargs)
