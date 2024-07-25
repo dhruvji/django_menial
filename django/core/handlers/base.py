@@ -13,9 +13,9 @@ from django.utils.log import log_response
 from django.utils.module_loading import import_string
 
 from .exception import convert_exception_to_response
+from .utils import adapt_method_mode
 
 logger = logging.getLogger("django.request")
-
 
 class BaseHandler:
     _view_middleware = None
@@ -51,7 +51,7 @@ class BaseHandler:
                 middleware_is_async = middleware_can_async
             try:
                 # Adapt handler, if needed.
-                adapted_handler = self.adapt_method_mode(
+                adapted_handler = adapt_method_mode(
                     middleware_is_async,
                     handler,
                     handler_is_async,
@@ -77,61 +77,27 @@ class BaseHandler:
             if hasattr(mw_instance, "process_view"):
                 self._view_middleware.insert(
                     0,
-                    self.adapt_method_mode(is_async, mw_instance.process_view),
+                    adapt_method_mode(is_async, mw_instance.process_view),
                 )
             if hasattr(mw_instance, "process_template_response"):
                 self._template_response_middleware.append(
-                    self.adapt_method_mode(
-                        is_async, mw_instance.process_template_response
-                    ),
+                    adapt_method_mode(is_async, mw_instance.process_template_response),
                 )
             if hasattr(mw_instance, "process_exception"):
                 # The exception-handling stack is still always synchronous for
                 # now, so adapt that way.
                 self._exception_middleware.append(
-                    self.adapt_method_mode(False, mw_instance.process_exception),
+                    adapt_method_mode(False, mw_instance.process_exception),
                 )
 
             handler = convert_exception_to_response(mw_instance)
             handler_is_async = middleware_is_async
 
         # Adapt the top of the stack, if needed.
-        handler = self.adapt_method_mode(is_async, handler, handler_is_async)
+        handler = adapt_method_mode(is_async, handler, handler_is_async)
         # We only assign to this when initialization is complete as it is used
         # as a flag for initialization being complete.
         self._middleware_chain = handler
-
-    def adapt_method_mode(
-        self,
-        is_async,
-        method,
-        method_is_async=None,
-        debug=False,
-        name=None,
-    ):
-        """
-        Adapt a method to be in the correct "mode":
-        - If is_async is False:
-          - Synchronous methods are left alone
-          - Asynchronous methods are wrapped with async_to_sync
-        - If is_async is True:
-          - Synchronous methods are wrapped with sync_to_async()
-          - Asynchronous methods are left alone
-        """
-        if method_is_async is None:
-            method_is_async = iscoroutinefunction(method)
-        if debug and not name:
-            name = name or "method %s()" % method.__qualname__
-        if is_async:
-            if not method_is_async:
-                if debug:
-                    logger.debug("Synchronous handler adapted for %s.", name)
-                return sync_to_async(method, thread_sensitive=True)
-        elif method_is_async:
-            if debug:
-                logger.debug("Asynchronous handler adapted for %s.", name)
-            return async_to_sync(method)
-        return method
 
     def get_response(self, request):
         """Return an HttpResponse object for the given HttpRequest."""
