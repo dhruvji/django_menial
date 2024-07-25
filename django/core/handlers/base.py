@@ -13,7 +13,7 @@ from django.utils.log import log_response
 from django.utils.module_loading import import_string
 
 from .exception import convert_exception_to_response
-from .utils import adapt_method_mode
+from .handler_utils import adapt_method_mode
 
 logger = logging.getLogger("django.request")
 
