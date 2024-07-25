@@ -133,7 +133,7 @@ def check_custom_error_handlers(app_configs, **kwargs):
     # which takes (request).
     for status_code, num_parameters in [(400, 2), (403, 2), (404, 2), (500, 1)]:
         try:
-            handler = resolver.resolve_error_handler(status_code)
+            handler = resolver.resolve_error_handler(status_code, log=True)
         except (ImportError, ViewDoesNotExist) as e:
             path = getattr(resolver.urlconf_module, "handler%s" % status_code)
             msg = (
