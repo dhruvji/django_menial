@@ -13,10 +13,10 @@ from django.utils.crypto import (
 class TestUtilsCryptoMisc(SimpleTestCase):
     def test_constant_time_compare(self):
         # It's hard to test for constant time, just test the result.
-        self.assertTrue(constant_time_compare(b"spam", b"spam"))
-        self.assertFalse(constant_time_compare(b"spam", b"eggs"))
-        self.assertTrue(constant_time_compare("spam", "spam"))
-        self.assertFalse(constant_time_compare("spam", "eggs"))
+        self.assertTrue(constant_time_compare(b"spam", b"spam", log=False))
+        self.assertFalse(constant_time_compare(b"spam", b"eggs", log=False))
+        self.assertTrue(constant_time_compare("spam", "spam", log=False))
+        self.assertFalse(constant_time_compare("spam", "eggs", log=False))
 
     def test_salted_hmac(self):
         tests = [

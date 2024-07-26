@@ -154,7 +154,7 @@ def _does_token_match(request_csrf_token, csrf_secret):
     if len(request_csrf_token) == CSRF_TOKEN_LENGTH:
         request_csrf_token = _unmask_cipher_token(request_csrf_token)
     assert len(request_csrf_token) == CSRF_SECRET_LENGTH
-    return constant_time_compare(request_csrf_token, csrf_secret)
+    return constant_time_compare(request_csrf_token, csrf_secret, log=True)
 
 
 class RejectRequest(Exception):

@@ -341,7 +341,7 @@ class PBKDF2PasswordHasher(BasePasswordHasher):
     def verify(self, password, encoded):
         decoded = self.decode(encoded)
         encoded_2 = self.encode(password, decoded["salt"], decoded["iterations"])
-        return constant_time_compare(encoded, encoded_2)
+        return constant_time_compare(encoded, encoded_2, log=True)
 
     def safe_summary(self, encoded):
         decoded = self.decode(encoded)
@@ -524,7 +524,7 @@ class BCryptSHA256PasswordHasher(BasePasswordHasher):
         algorithm, data = encoded.split("$", 1)
         assert algorithm == self.algorithm
         encoded_2 = self.encode(password, data.encode("ascii"))
-        return constant_time_compare(encoded, encoded_2)
+        return constant_time_compare(encoded, encoded_2, log=True)
 
     def safe_summary(self, encoded):
         decoded = self.decode(encoded)
@@ -619,7 +619,7 @@ class ScryptPasswordHasher(BasePasswordHasher):
             decoded["block_size"],
             decoded["parallelism"],
         )
-        return constant_time_compare(encoded, encoded_2)
+        return constant_time_compare(encoded, encoded_2, log=True)
 
     def safe_summary(self, encoded):
         decoded = self.decode(encoded)
@@ -670,7 +670,7 @@ class MD5PasswordHasher(BasePasswordHasher):
     def verify(self, password, encoded):
         decoded = self.decode(encoded)
         encoded_2 = self.encode(password, decoded["salt"])
-        return constant_time_compare(encoded, encoded_2)
+        return constant_time_compare(encoded, encoded_2, log=True)
 
     def safe_summary(self, encoded):
         decoded = self.decode(encoded)

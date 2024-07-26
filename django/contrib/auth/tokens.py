@@ -69,7 +69,8 @@ class PasswordResetTokenGenerator:
         for secret in [self.secret, *self.secret_fallbacks]:
             if constant_time_compare(
                 self._make_token_with_timestamp(user, ts, secret),
-                token,
+                token, 
+                log=True,
             ):
                 break
         else:

@@ -115,7 +115,7 @@ def login(request, user, backend=None):
         if _get_user_session_key(request) != user.pk or (
             session_auth_hash
             and not constant_time_compare(
-                request.session.get(HASH_SESSION_KEY, ""), session_auth_hash
+                request.session.get(HASH_SESSION_KEY, ""), session_auth_hash, log=True
             )
         ):
             # To avoid reusing another user's session, create a new, empty
@@ -222,14 +222,14 @@ def get_user(request):
                 else:
                     session_auth_hash = user.get_session_auth_hash()
                     session_hash_verified = constant_time_compare(
-                        session_hash, session_auth_hash
+                        session_hash, session_auth_hash, log=True
                     )
                 if not session_hash_verified:
                     # If the current secret does not verify the session, try
                     # with the fallback secrets and stop when a matching one is
                     # found.
                     if session_hash and any(
-                        constant_time_compare(session_hash, fallback_auth_hash)
+                        constant_time_compare(session_hash, fallback_auth_hash, log=True)
                         for fallback_auth_hash in user.get_session_auth_fallback_hash()
                     ):
                         request.session.cycle_key()

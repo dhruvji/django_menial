@@ -5,10 +5,12 @@ Django's standard crypto functions and utilities.
 import hashlib
 import hmac
 import secrets
+import logging
 
 from django.conf import settings
 from django.utils.encoding import force_bytes
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class InvalidAlgorithm(ValueError):
     """Algorithm is not supported by hashlib."""
@@ -62,8 +64,10 @@ def get_random_string(length, allowed_chars=RANDOM_STRING_CHARS):
     return "".join(secrets.choice(allowed_chars) for i in range(length))
 
 
-def constant_time_compare(val1, val2):
+def constant_time_compare(val1, val2, log=False):
     """Return True if the two strings are equal, False otherwise."""
+    if log:
+        logging.info(f'Comparing {val1} with {val2}')
     return secrets.compare_digest(force_bytes(val1), force_bytes(val2))
 
 
