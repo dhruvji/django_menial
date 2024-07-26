@@ -16,7 +16,7 @@ from django.db import DEFAULT_DB_ALIAS, DatabaseError, connections
 from django.db.models.constants import LOOKUP_SEP
 from django.utils import tree
 from django.utils.functional import cached_property
-from django.utils.hashable import make_hashable
+from django.utils.able import make_hashable
 
 logger = logging.getLogger("django.db.models")
 

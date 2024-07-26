@@ -1,9 +1,20 @@
+# RemovedInDjango60Warning: Remove the is_iterable module.
+
 from django.test import SimpleTestCase
-from django.utils.hashable import make_hashable
+from django.utils.deprecation import RemovedInDjango60Warning
+from django.utils.able import make_hashable, is_iterable
 
 
-class TestHashable(SimpleTestCase):
-    def test_equal(self):
+class TestUtils(SimpleTestCase):
+    def test_is_iterable_deprecation(self):
+        msg = (
+            "django.utils.itercompat.is_iterable() is deprecated. "
+            "Use isinstance(..., collections.abc.Iterable) instead."
+        )
+        with self.assertWarnsMessage(RemovedInDjango60Warning, msg):
+            is_iterable([])
+
+    def test_make_hashable_equal(self):
         tests = (
             ([], ()),
             (["a", 1], ("a", 1)),
@@ -19,7 +30,7 @@ class TestHashable(SimpleTestCase):
             with self.subTest(value=value):
                 self.assertEqual(make_hashable(value), expected)
 
-    def test_count_equal(self):
+    def test_make_hashable_count_equal(self):
         tests = (
             ({"a": 1, "b": ["a", 1]}, (("a", 1), ("b", ("a", 1)))),
             ({"a": 1, "b": ("a", [1, 2])}, (("a", 1), ("b", ("a", (1, 2))))),
@@ -28,7 +39,7 @@ class TestHashable(SimpleTestCase):
             with self.subTest(value=value):
                 self.assertCountEqual(make_hashable(value), expected)
 
-    def test_unhashable(self):
+    def test_make_hashable_unhashable(self):
         class Unhashable:
             __hash__ = None
 

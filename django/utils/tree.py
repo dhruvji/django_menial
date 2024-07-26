@@ -5,7 +5,7 @@ ORM.
 
 import copy
 
-from django.utils.hashable import make_hashable
+from django.utils.able import make_hashable
 
 
 class Node:

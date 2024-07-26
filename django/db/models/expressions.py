@@ -16,7 +16,7 @@ from django.db.models.constants import LOOKUP_SEP
 from django.db.models.query_utils import Q
 from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property, classproperty
-from django.utils.hashable import make_hashable
+from django.utils.able import make_hashable
 
 
 class SQLiteNumericMixin:

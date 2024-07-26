@@ -24,7 +24,7 @@ from django.forms.widgets import (
     SelectMultiple,
 )
 from django.utils.choices import BaseChoiceIterator
-from django.utils.hashable import make_hashable
+from django.utils.able import make_hashable
 from django.utils.text import capfirst, get_text_list
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _

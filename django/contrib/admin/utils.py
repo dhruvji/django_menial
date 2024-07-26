@@ -13,7 +13,7 @@ from django.db.models.deletion import Collector
 from django.forms.utils import pretty_name
 from django.urls import NoReverseMatch, reverse
 from django.utils import formats, timezone
-from django.utils.hashable import make_hashable
+from django.utils.able import make_hashable
 from django.utils.html import format_html
 from django.utils.regex_helper import _lazy_re_compile
 from django.utils.text import capfirst
