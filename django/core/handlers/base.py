@@ -13,6 +13,7 @@ from django.utils.log import log_response
 from django.utils.module_loading import import_string
 
 from .exception import convert_exception_to_response
+from .handler_utils import check_response  # Import the check_response function
 
 logger = logging.getLogger("django.request")
 
@@ -201,7 +202,7 @@ class BaseHandler:
                     raise
 
         # Complain if the view returned None (a common error).
-        self.check_response(response, callback)
+        check_response(response, callback)
 
         # If the response supports deferred rendering, apply template
         # response middleware and then render the response
@@ -210,7 +211,7 @@ class BaseHandler:
                 response = middleware_method(request, response)
                 # Complain if the template response middleware returned None
                 # (a common error).
-                self.check_response(
+                check_response(
                     response,
                     middleware_method,
                     name="%s.process_template_response"
@@ -262,7 +263,7 @@ class BaseHandler:
                     raise
 
         # Complain if the view returned None or an uncalled coroutine.
-        self.check_response(response, callback)
+        check_response(response, callback)
 
         # If the response supports deferred rendering, apply template
         # response middleware and then render the response
@@ -271,7 +272,7 @@ class BaseHandler:
                 response = await middleware_method(request, response)
                 # Complain if the template response middleware returned None or
                 # an uncalled coroutine.
-                self.check_response(
+                check_response(
                     response,
                     middleware_method,
                     name="%s.process_template_response"
@@ -313,32 +314,6 @@ class BaseHandler:
         resolver_match = resolver.resolve(request.path_info)
         request.resolver_match = resolver_match
         return resolver_match
-
-    def check_response(self, response, callback, name=None):
-        """
-        Raise an error if the view returned None or an uncalled coroutine.
-        """
-        if not (response is None or asyncio.iscoroutine(response)):
-            return
-        if not name:
-            if isinstance(callback, types.FunctionType):  # FBV
-                name = "The view %s.%s" % (callback.__module__, callback.__name__)
-            else:  # CBV
-                name = "The view %s.%s.__call__" % (
-                    callback.__module__,
-                    callback.__class__.__name__,
-                )
-        if response is None:
-            raise ValueError(
-                "%s didn't return an HttpResponse object. It returned None "
-                "instead." % name
-            )
-        elif asyncio.iscoroutine(response):
-            raise ValueError(
-                "%s didn't return an HttpResponse object. It returned an "
-                "unawaited coroutine instead. You may need to add an 'await' "
-                "into your view." % name
-            )
 
     # Other utility methods.
 
