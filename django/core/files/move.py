@@ -1,8 +1,8 @@
 """
 Move a file in the safest way possible::
 
-    >>> from django.core.files.move import file_move_safe
-    >>> file_move_safe("/tmp/old_file", "/tmp/new_file")
+    >>> from django.core.files.move import safe_file_move
+    >>> safe_file_move("/tmp/old_file", "/tmp/new_file")
 """
 
 import os
@@ -10,10 +10,10 @@ from shutil import copymode, copystat
 
 from django.core.files import locks
 
-__all__ = ["file_move_safe"]
+__all__ = ["safe_file_move"]
 
 
-def file_move_safe(
+def safe_file_move(
     old_file_name, new_file_name, chunk_size=1024 * 64, allow_overwrite=False
 ):
     """

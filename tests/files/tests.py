@@ -10,7 +10,7 @@ from unittest import mock
 
 from django.core.files import File, locks
 from django.core.files.base import ContentFile
-from django.core.files.move import file_move_safe
+from django.core.files.move import safe_file_move
 from django.core.files.temp import NamedTemporaryFile
 from django.core.files.uploadedfile import (
     InMemoryUploadedFile,
@@ -426,15 +426,15 @@ class FileMoveSafeTests(unittest.TestCase):
         handle_a, self.file_a = tempfile.mkstemp()
         handle_b, self.file_b = tempfile.mkstemp()
 
-        # file_move_safe() raises FileExistsError if the destination file
+        # safe_file_move() raises FileExistsError if the destination file
         # exists and allow_overwrite is False.
         msg = r"Destination file .* exists and allow_overwrite is False\."
         with self.assertRaisesRegex(FileExistsError, msg):
-            file_move_safe(self.file_a, self.file_b, allow_overwrite=False)
+            safe_file_move(self.file_a, self.file_b, allow_overwrite=False)
 
         # should allow it and continue on if allow_overwrite is True
         self.assertIsNone(
-            file_move_safe(self.file_a, self.file_b, allow_overwrite=True)
+            safe_file_move(self.file_a, self.file_b, allow_overwrite=True)
         )
 
         os.close(handle_a)
@@ -442,7 +442,7 @@ class FileMoveSafeTests(unittest.TestCase):
 
     def test_file_move_permissionerror(self):
         """
-        file_move_safe() ignores PermissionError thrown by copystat() and
+        safe_file_move() ignores PermissionError thrown by copystat() and
         copymode().
         For example, PermissionError can be raised when the destination
         filesystem is CIFS, or when relabel is disabled by SELinux across
@@ -462,7 +462,7 @@ class FileMoveSafeTests(unittest.TestCase):
                     "django.core.files.move.copystat", side_effect=os_error
                 ):
                     with self.assertRaises(OSError):
-                        file_move_safe(self.file_a, self.file_b, allow_overwrite=True)
+                        safe_file_move(self.file_a, self.file_b, allow_overwrite=True)
                 # When copystat() throws PermissionError, copymode() error besides
                 # PermissionError isn't ignored.
                 with mock.patch(
@@ -472,7 +472,7 @@ class FileMoveSafeTests(unittest.TestCase):
                         "django.core.files.move.copymode", side_effect=os_error
                     ):
                         with self.assertRaises(OSError):
-                            file_move_safe(
+                            safe_file_move(
                                 self.file_a, self.file_b, allow_overwrite=True
                             )
                 # PermissionError raised by copystat() is ignored.
@@ -480,14 +480,14 @@ class FileMoveSafeTests(unittest.TestCase):
                     "django.core.files.move.copystat", side_effect=permission_error
                 ):
                     self.assertIsNone(
-                        file_move_safe(self.file_a, self.file_b, allow_overwrite=True)
+                        safe_file_move(self.file_a, self.file_b, allow_overwrite=True)
                     )
                     # PermissionError raised by copymode() is ignored too.
                     with mock.patch(
                         "django.core.files.move.copymode", side_effect=permission_error
                     ):
                         self.assertIsNone(
-                            file_move_safe(
+                            safe_file_move(
                                 self.file_c, self.file_b, allow_overwrite=True
                             )
                         )

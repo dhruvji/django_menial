@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.core.files import File, locks
-from django.core.files.move import file_move_safe
+from django.core.files.move import safe_file_move
 from django.core.signals import setting_changed
 from django.utils._os import safe_join
 from django.utils.deconstruct import deconstructible
@@ -110,7 +110,7 @@ class FileSystemStorage(Storage, StorageSettingsMixin):
             try:
                 # This file has a file path that we can move.
                 if hasattr(content, "temporary_file_path"):
-                    file_move_safe(
+                    safe_file_move(
                         content.temporary_file_path(),
                         full_path,
                         allow_overwrite=self._allow_overwrite,

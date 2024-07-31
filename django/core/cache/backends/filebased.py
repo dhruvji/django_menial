@@ -10,7 +10,7 @@ from hashlib import md5
 
 from django.core.cache.backends.base import DEFAULT_TIMEOUT, BaseCache
 from django.core.files import locks
-from django.core.files.move import file_move_safe
+from django.core.files.move import safe_file_move
 
 
 class FileBasedCache(BaseCache):
@@ -52,7 +52,7 @@ class FileBasedCache(BaseCache):
         try:
             with open(fd, "wb") as f:
                 self._write_content(f, timeout, value)
-            file_move_safe(tmp_path, fname, allow_overwrite=True)
+            safe_file_move(tmp_path, fname, allow_overwrite=True)
             renamed = True
         finally:
             if not renamed:

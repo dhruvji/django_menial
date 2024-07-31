@@ -56,8 +56,8 @@ Bugfixes
 * Made date-based generic views return a 404 rather than crash when given an
   out of range date (:ticket:`28209`).
 
-* Fixed a regression where ``file_move_safe()`` crashed when moving files to a
-  CIFS mount (:ticket:`28170`).
+* Fixed a regression where ``file_move_safe()`` (now ``safe_file_move()``) crashed when moving files to a
+  CIFS mount (:ticket:`28170`). 
 
 * Moved the ``ImageField`` file extension validation added in Django 1.11 from
   the model field to the form field to reallow the use case of storing images
