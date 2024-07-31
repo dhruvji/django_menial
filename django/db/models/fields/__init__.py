@@ -1903,7 +1903,7 @@ class DurationField(Field):
 
     def value_to_string(self, obj):
         val = self.value_from_object(obj)
-        return "" if val is None else duration_string(val)
+        return duration_string(val)
 
     def formfield(self, **kwargs):
         return super().formfield(

@@ -26,6 +26,10 @@ class TestDurationString(unittest.TestCase):
         duration = datetime.timedelta(days=-1, hours=1, minutes=3, seconds=5)
         self.assertEqual(duration_string(duration), "-1 01:03:05")
 
+    def test_none(self):
+        duration = None
+        self.assertEqual(duration_string(duration), "")
+
 
 class TestParseDurationRoundtrip(unittest.TestCase):
     def test_simple(self):

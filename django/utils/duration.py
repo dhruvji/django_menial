@@ -17,6 +17,9 @@ def _get_duration_components(duration):
 
 def duration_string(duration):
     """Version of str(timedelta) which is not English specific."""
+    if duration is None:
+        return ""
+        
     days, hours, minutes, seconds, microseconds = _get_duration_components(duration)
 
     string = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
