@@ -19,7 +19,7 @@ from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.forms.boundfield import BoundField
-from django.forms.utils import from_current_timezone, to_current_timezone
+from django.forms.utils import TimeZoneUtility
 from django.forms.widgets import (
     FILE_INPUT_CONTRADICTION,
     CheckboxInput,
@@ -531,7 +531,7 @@ class DateTimeField(BaseTemporalField):
 
     def prepare_value(self, value):
         if isinstance(value, datetime.datetime):
-            value = to_current_timezone(value)
+            value = TimeZoneUtility.to_current_timezone(value)
         return value
 
     def to_python(self, value):
@@ -542,17 +542,17 @@ class DateTimeField(BaseTemporalField):
         if value in self.empty_values:
             return None
         if isinstance(value, datetime.datetime):
-            return from_current_timezone(value)
+            return TimeZoneUtility.from_current_timezone(value)
         if isinstance(value, datetime.date):
             result = datetime.datetime(value.year, value.month, value.day)
-            return from_current_timezone(result)
+            return TimeZoneUtility.from_current_timezone(result)
         try:
             result = parse_datetime(value.strip())
         except ValueError:
             raise ValidationError(self.error_messages["invalid"], code="invalid")
         if not result:
             result = super().to_python(value)
-        return from_current_timezone(result)
+        return TimeZoneUtility.from_current_timezone(result)
 
     def strptime(self, value, format):
         return datetime.datetime.strptime(value, format)

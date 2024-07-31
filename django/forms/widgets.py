@@ -9,7 +9,7 @@ from collections import defaultdict
 from graphlib import CycleError, TopologicalSorter
 from itertools import chain
 
-from django.forms.utils import to_current_timezone
+from django.forms.utils import TimeZoneUtility
 from django.templatetags.static import static
 from django.utils import formats
 from django.utils.choices import normalize_choices
@@ -1019,7 +1019,7 @@ class SplitDateTimeWidget(MultiWidget):
 
     def decompress(self, value):
         if value:
-            value = to_current_timezone(value)
+            value = TimeZoneUtility.to_current_timezone(value)
             return [value.date(), value.time()]
         return [None, None]
 
