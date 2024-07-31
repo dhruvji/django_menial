@@ -26,7 +26,7 @@ from django.core.cache import (
 )
 from django.core.cache.backends.base import InvalidCacheBackendError
 from django.core.cache.backends.redis import RedisCacheClient
-from django.core.cache.utils import make_template_fragment_key
+from django.templatetags.cache import make_template_fragment_key
 from django.db import close_old_connections, connection, connections
 from django.db.backends.utils import CursorWrapper
 from django.http import (
