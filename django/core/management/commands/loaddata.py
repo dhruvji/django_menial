@@ -13,7 +13,7 @@ from django.core import serializers
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
-from django.core.management.utils import parse_apps_and_model_labels
+from django.core.management.utils import get_models_from_labels, get_apps_from_labels
 from django.db import (
     DEFAULT_DB_ALIAS,
     DatabaseError,
@@ -94,9 +94,7 @@ class Command(BaseCommand):
         self.using = options["database"]
         self.app_label = options["app_label"]
         self.verbosity = options["verbosity"]
-        self.excluded_models, self.excluded_apps = parse_apps_and_model_labels(
-            options["exclude"]
-        )
+        self.excluded_models, self.excluded_apps = get_models_from_labels(options["exclude"]), get_apps_from_labels(options["exclude"])
         self.format = options["format"]
 
         with transaction.atomic(using=self.using):

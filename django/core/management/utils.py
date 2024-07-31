@@ -84,14 +84,11 @@ def get_random_secret_key():
     return get_random_string(50, chars)
 
 
-def parse_apps_and_model_labels(labels):
+def get_models_from_labels(labels):
     """
-    Parse a list of "app_label.ModelName" or "app_label" strings into actual
-    objects and return a two-element tuple:
-        (set of model classes, set of app_configs).
-    Raise a CommandError if some specified models or apps don't exist.
+    Parse a list of "app_label.ModelName" strings into a set of model classes.
+    Raise a CommandError if any specified models don't exist.
     """
-    apps = set()
     models = set()
 
     for label in labels:
@@ -99,16 +96,29 @@ def parse_apps_and_model_labels(labels):
             try:
                 model = installed_apps.get_model(label)
             except LookupError:
-                raise CommandError("Unknown model: %s" % label)
+                raise CommandError(f"Unknown model: {label}")
             models.add(model)
-        else:
+
+    return models
+
+
+def get_apps_from_labels(labels):
+    """
+    Parse a list of "app_label" strings into a set of app_configs.
+    Raise a CommandError if any specified apps don't exist.
+    """
+    apps = set()
+
+    for label in labels:
+        if "." not in label:
             try:
                 app_config = installed_apps.get_app_config(label)
             except LookupError as e:
                 raise CommandError(str(e))
             apps.add(app_config)
 
-    return models, apps
+    return apps
+
 
 
 def get_command_line_option(argv, option):

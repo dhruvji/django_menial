@@ -5,7 +5,7 @@ import warnings
 from django.apps import apps
 from django.core import serializers
 from django.core.management.base import BaseCommand, CommandError
-from django.core.management.utils import parse_apps_and_model_labels
+from django.core.management.utils import get_models_from_labels, get_apps_from_labels
 from django.db import DEFAULT_DB_ALIAS, connections, router
 
 try:
@@ -118,7 +118,7 @@ class Command(BaseCommand):
         else:
             primary_keys = []
 
-        excluded_models, excluded_apps = parse_apps_and_model_labels(excludes)
+        excluded_models, excluded_apps = get_models_from_labels(excludes), get_apps_from_labels(excludes)
 
         if not app_labels:
             if primary_keys:
