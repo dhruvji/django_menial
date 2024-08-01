@@ -1,1 +1,11 @@
 add a new PathTraversal exception that extends the suspicious operation exception and replaces some of the SuspiciousFileOperation calls. Update the repository accordingly
+
+modified:   django/core/exceptions.py
+	modified:   django/core/files/storage/base.py
+	modified:   django/core/files/utils.py
+	modified:   django/utils/_os.py
+	modified:   docs/ref/exceptions.txt
+	new file:   task.txt
+	new file:   task_test/path-traversal.py
+	modified:   tests/file_storage/test_generate_filename.py
+	modified:   tests/utils_tests/test_os_utils.py
