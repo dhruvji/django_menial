@@ -60,6 +60,29 @@ class DummyNode(Node):
         raise NodeNotFoundError(self.error_message, self.key, origin=self.origin)
 
 
+class ReferenceContext:
+    def __init__(self, migration, child, parent, skip_validation=False):
+        """
+        Initialize the ReferenceContext object with the parameters needed
+        for the add_dependency function.
+
+        :param migration: The migration associated with this dependency.
+        :param child: The child node key.
+        :param parent: The parent node key.
+        :param skip_validation: A boolean flag indicating whether to skip validation.
+        """
+        self.migration = migration
+        self.child = child
+        self.parent = parent
+        self.skip_validation = skip_validation
+
+    def __repr__(self):
+        return (
+            f"<ReferenceContext(migration={self.migration}, child={self.child}, "
+            f"parent={self.parent}, skip_validation={self.skip_validation})>"
+        )
+
+
 class MigrationGraph:
     """
     Represent the digraph of all migrations in a project.
@@ -98,27 +121,27 @@ class MigrationGraph:
         self.node_map[key] = node
         self.nodes[key] = None
 
-    def add_dependency(self, migration, child, parent, skip_validation=False):
+    def add_dependency(self, context: ReferenceContext):
         """
         This may create dummy nodes if they don't yet exist. If
-        `skip_validation=True`, validate_consistency() should be called
+        `context.skip_validation=True`, validate_consistency() should be called
         afterward.
         """
-        if child not in self.nodes:
+        if context.child not in self.nodes:
             error_message = (
                 "Migration %s dependencies reference nonexistent"
-                " child node %r" % (migration, child)
+                " child node %r" % (context.migration, context.child)
             )
-            self.add_dummy_node(child, migration, error_message)
-        if parent not in self.nodes:
+            self.add_dummy_node(context.child, context.migration, error_message)
+        if context.parent not in self.nodes:
             error_message = (
                 "Migration %s dependencies reference nonexistent"
-                " parent node %r" % (migration, parent)
+                " parent node %r" % (context.migration, context.parent)
             )
-            self.add_dummy_node(parent, migration, error_message)
-        self.node_map[child].add_parent(self.node_map[parent])
-        self.node_map[parent].add_child(self.node_map[child])
-        if not skip_validation:
+            self.add_dummy_node(context.parent, context.migration, error_message)
+        self.node_map[context.child].add_parent(self.node_map[context.parent])
+        self.node_map[context.parent].add_child(self.node_map[context.child])
+        if not context.skip_validation:
             self.validate_consistency()
 
     def remove_replaced_nodes(self, replacement, replaced):

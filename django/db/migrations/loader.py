@@ -4,7 +4,7 @@ from importlib import import_module, reload
 
 from django.apps import apps
 from django.conf import settings
-from django.db.migrations.graph import MigrationGraph
+from django.db.migrations.graph import MigrationGraph, ReferenceContext
 from django.db.migrations.recorder import MigrationRecorder
 
 from .exceptions import (
@@ -15,7 +15,6 @@ from .exceptions import (
 )
 
 MIGRATIONS_MODULE_NAME = "migrations"
-
 
 class MigrationLoader:
     """
@@ -204,7 +203,8 @@ class MigrationLoader:
         for parent in migration.dependencies:
             # Ignore __first__ references to the same app.
             if parent[0] == key[0] and parent[1] != "__first__":
-                self.graph.add_dependency(migration, key, parent, skip_validation=True)
+                context = ReferenceContext(migration, key, parent, skip_validation=True)
+                self.graph.add_dependency(context)
 
     def add_external_dependencies(self, key, migration):
         for parent in migration.dependencies:
@@ -213,11 +213,13 @@ class MigrationLoader:
                 continue
             parent = self.check_key(parent, key[0])
             if parent is not None:
-                self.graph.add_dependency(migration, key, parent, skip_validation=True)
+                context = ReferenceContext(migration, key, parent, skip_validation=True)
+                self.graph.add_dependency(context)
         for child in migration.run_before:
             child = self.check_key(child, key[0])
             if child is not None:
-                self.graph.add_dependency(migration, child, key, skip_validation=True)
+                context = ReferenceContext(migration, child, key, skip_validation=True)
+                self.graph.add_dependency(context)
 
     def build_graph(self):
         """

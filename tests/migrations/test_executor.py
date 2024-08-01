@@ -4,7 +4,7 @@ from django.apps.registry import apps as global_apps
 from django.db import DatabaseError, connection, migrations, models
 from django.db.migrations.exceptions import InvalidMigrationPlan
 from django.db.migrations.executor import MigrationExecutor
-from django.db.migrations.graph import MigrationGraph
+from django.db.migrations.graph import MigrationGraph, ReferenceContext
 from django.db.migrations.recorder import MigrationRecorder
 from django.db.migrations.state import ProjectState
 from django.test import (
@@ -500,6 +500,7 @@ class ExecutorTests(MigrationTestBase):
             executor.migrate([("lookuperror_b", "0003_b3")])
             self.assertTableExists("lookuperror_b_b3")
             # Rebuild the graph to reflect the new DB state
+
             executor.loader.build_graph()
 
             # Migrate forwards -- This led to a lookup LookupErrors because
@@ -884,8 +885,8 @@ class ExecutorUnitTests(SimpleTestCase):
         graph.add_node(a1, a1_impl)
         graph.add_node(a2, a2_impl)
         graph.add_node(b1, b1_impl)
-        graph.add_dependency(None, b1, a1)
-        graph.add_dependency(None, a2, a1)
+        graph.add_dependency(ReferenceContext(None, b1, a1))
+        graph.add_dependency(ReferenceContext(None, a2, a1))
 
         executor = MigrationExecutor(None)
         executor.loader = FakeLoader(
@@ -929,13 +930,13 @@ class ExecutorUnitTests(SimpleTestCase):
         graph.add_node(a4, a4_impl)
         graph.add_node(b1, b1_impl)
         graph.add_node(b2, b2_impl)
-        graph.add_dependency(None, a2, a1)
-        graph.add_dependency(None, a3, a1)
-        graph.add_dependency(None, a4, a2)
-        graph.add_dependency(None, a4, a3)
-        graph.add_dependency(None, b2, b1)
-        graph.add_dependency(None, b1, a1)
-        graph.add_dependency(None, b2, a2)
+        graph.add_dependency(ReferenceContext(None, a2, a1))
+        graph.add_dependency(ReferenceContext(None, a3, a1))
+        graph.add_dependency(ReferenceContext(None, a4, a2))
+        graph.add_dependency(ReferenceContext(None, a4, a3))
+        graph.add_dependency(ReferenceContext(None, b2, b1))
+        graph.add_dependency(ReferenceContext(None, b1, a1))
+        graph.add_dependency(ReferenceContext(None, b2, a2))
 
         executor = MigrationExecutor(None)
         executor.loader = FakeLoader(
@@ -980,9 +981,9 @@ class ExecutorUnitTests(SimpleTestCase):
         graph.add_node(a2, a2_impl)
         graph.add_node(b1, b1_impl)
         graph.add_node(c1, c1_impl)
-        graph.add_dependency(None, a2, a1)
-        graph.add_dependency(None, b1, a1)
-        graph.add_dependency(None, c1, a1)
+        graph.add_dependency(ReferenceContext(None, a2, a1))
+        graph.add_dependency(ReferenceContext(None, b1, a1))
+        graph.add_dependency(ReferenceContext(None, c1, a1))
 
         executor = MigrationExecutor(None)
         executor.loader = FakeLoader(

@@ -9,7 +9,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.core.validators import RegexValidator, validate_slug
 from django.db import connection, migrations, models
 from django.db.migrations.autodetector import MigrationAutodetector
-from django.db.migrations.graph import MigrationGraph
+from django.db.migrations.graph import MigrationGraph, ReferenceContext
 from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.questioner import MigrationQuestioner
 from django.db.migrations.state import ModelState, ProjectState
@@ -1152,15 +1152,15 @@ class AutodetectorTests(BaseAutodetectorTests):
         graph.add_node(("testapp", "0001_initial"), None)
         graph.add_node(("testapp", "0002_foobar"), None)
         graph.add_node(("otherapp", "0001_initial"), None)
-        graph.add_dependency(
+        graph.add_dependency(ReferenceContext(
             "testapp.0002_foobar",
             ("testapp", "0002_foobar"),
-            ("testapp", "0001_initial"),
+            ("testapp", "0001_initial"))
         )
-        graph.add_dependency(
+        graph.add_dependency(ReferenceContext(
             "testapp.0002_foobar",
             ("testapp", "0002_foobar"),
-            ("otherapp", "0001_initial"),
+            ("otherapp", "0001_initial"))
         )
         # Use project state to make a new migration change set
         before = self.make_project_state([self.publisher, self.other_pony])
@@ -1242,10 +1242,10 @@ class AutodetectorTests(BaseAutodetectorTests):
         graph.add_node(("testapp", "0001_initial"), None)
         graph.add_node(("testapp", "0002_foobar"), None)
         graph.add_node(("otherapp", "0001_initial"), None)
-        graph.add_dependency(
+        graph.add_dependency(ReferenceContext(
             "testapp.0002_foobar",
             ("testapp", "0002_foobar"),
-            ("testapp", "0001_initial"),
+            ("testapp", "0001_initial"))
         )
 
         # Use project state to make a new migration change set

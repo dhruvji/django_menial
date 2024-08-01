@@ -1,5 +1,5 @@
 from django.db.migrations.exceptions import CircularDependencyError, NodeNotFoundError
-from django.db.migrations.graph import DummyNode, MigrationGraph, Node
+from django.db.migrations.graph import DummyNode, MigrationGraph, Node, ReferenceContext
 from django.test import SimpleTestCase
 
 
@@ -24,11 +24,11 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_a", "0004"), None)
         graph.add_node(("app_b", "0001"), None)
         graph.add_node(("app_b", "0002"), None)
-        graph.add_dependency("app_a.0004", ("app_a", "0004"), ("app_a", "0003"))
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_a", "0002"))
-        graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_b", "0002"))
-        graph.add_dependency("app_b.0002", ("app_b", "0002"), ("app_b", "0001"))
+        graph.add_dependency(ReferenceContext("app_a.0004", ("app_a", "0004"), ("app_a", "0003")))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_a", "0002")))
+        graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_b", "0002")))
+        graph.add_dependency(ReferenceContext("app_b.0002", ("app_b", "0002"), ("app_b", "0001")))
         # Test root migration case
         self.assertEqual(
             graph.forwards_plan(("app_a", "0001")),
@@ -86,15 +86,15 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_b", "0002"), None)
         graph.add_node(("app_c", "0001"), None)
         graph.add_node(("app_c", "0002"), None)
-        graph.add_dependency("app_a.0004", ("app_a", "0004"), ("app_a", "0003"))
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_a", "0002"))
-        graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_b", "0002"))
-        graph.add_dependency("app_b.0002", ("app_b", "0002"), ("app_b", "0001"))
-        graph.add_dependency("app_a.0004", ("app_a", "0004"), ("app_c", "0002"))
-        graph.add_dependency("app_c.0002", ("app_c", "0002"), ("app_c", "0001"))
-        graph.add_dependency("app_c.0001", ("app_c", "0001"), ("app_b", "0001"))
-        graph.add_dependency("app_c.0002", ("app_c", "0002"), ("app_a", "0002"))
+        graph.add_dependency(ReferenceContext("app_a.0004", ("app_a", "0004"), ("app_a", "0003")))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_a", "0002")))
+        graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_b", "0002")))
+        graph.add_dependency(ReferenceContext("app_b.0002", ("app_b", "0002"), ("app_b", "0001")))
+        graph.add_dependency(ReferenceContext("app_a.0004", ("app_a", "0004"), ("app_c", "0002")))
+        graph.add_dependency(ReferenceContext("app_c.0002", ("app_c", "0002"), ("app_c", "0001")))
+        graph.add_dependency(ReferenceContext("app_c.0001", ("app_c", "0001"), ("app_b", "0001")))
+        graph.add_dependency(ReferenceContext("app_c.0002", ("app_c", "0002"), ("app_a", "0002")))
         # Test branch C only
         self.assertEqual(
             graph.forwards_plan(("app_c", "0002")),
@@ -153,11 +153,11 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_a", "0003"), None)
         graph.add_node(("app_b", "0001"), None)
         graph.add_node(("app_b", "0002"), None)
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_a", "0002"))
-        graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
-        graph.add_dependency("app_a.0001", ("app_a", "0001"), ("app_b", "0002"))
-        graph.add_dependency("app_b.0002", ("app_b", "0002"), ("app_b", "0001"))
-        graph.add_dependency("app_b.0001", ("app_b", "0001"), ("app_a", "0003"))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_a", "0002")))
+        graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
+        graph.add_dependency(ReferenceContext("app_a.0001", ("app_a", "0001"), ("app_b", "0002")))
+        graph.add_dependency(ReferenceContext("app_b.0002", ("app_b", "0002"), ("app_b", "0001")))
+        graph.add_dependency(ReferenceContext("app_b.0001", ("app_b", "0001"), ("app_a", "0003")))
         # Test whole graph
         with self.assertRaises(CircularDependencyError):
             graph.ensure_not_cyclic()
@@ -167,9 +167,9 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("A", "0001"), None)
         graph.add_node(("C", "0001"), None)
         graph.add_node(("B", "0001"), None)
-        graph.add_dependency("A.0001", ("A", "0001"), ("B", "0001"))
-        graph.add_dependency("B.0001", ("B", "0001"), ("A", "0001"))
-        graph.add_dependency("C.0001", ("C", "0001"), ("B", "0001"))
+        graph.add_dependency(ReferenceContext("A.0001", ("A", "0001"), ("B", "0001")))
+        graph.add_dependency(ReferenceContext("B.0001", ("B", "0001"), ("A", "0001")))
+        graph.add_dependency(ReferenceContext("C.0001", ("C", "0001"), ("B", "0001")))
 
         with self.assertRaises(CircularDependencyError):
             graph.ensure_not_cyclic()
@@ -183,7 +183,7 @@ class GraphTests(SimpleTestCase):
             parent = ("app_a", str(i - 1))
             child = ("app_a", str(i))
             graph.add_node(child, None)
-            graph.add_dependency(str(i), child, parent)
+            graph.add_dependency(ReferenceContext(str(i), child, parent))
             expected.append(child)
         leaf = expected[-1]
 
@@ -205,10 +205,10 @@ class GraphTests(SimpleTestCase):
             graph.add_node(("app_b", str(i)), None)
             graph.add_node(("app_c", str(i)), None)
         for i in range(1, n):
-            graph.add_dependency(None, ("app_b", str(i)), ("app_a", str(i)))
-            graph.add_dependency(None, ("app_c", str(i)), ("app_a", str(i)))
-            graph.add_dependency(None, ("app_a", str(i + 1)), ("app_b", str(i)))
-            graph.add_dependency(None, ("app_a", str(i + 1)), ("app_c", str(i)))
+            graph.add_dependency(ReferenceContext(None, ("app_b", str(i)), ("app_a", str(i))))
+            graph.add_dependency(ReferenceContext(None, ("app_c", str(i)), ("app_a", str(i))))
+            graph.add_dependency(ReferenceContext(None, ("app_a", str(i + 1)), ("app_b", str(i))))
+            graph.add_dependency(ReferenceContext(None, ("app_a", str(i + 1)), ("app_c", str(i))))
         plan = graph.forwards_plan(("app_a", str(n)))
         expected = [
             (app, str(i)) for i in range(1, n) for app in ["app_a", "app_c", "app_b"]
@@ -238,14 +238,14 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_a", "0002"), None)
         graph.add_node(("app_a", "0003"), None)
         graph.add_node(("app_b", "0001"), None)
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_a", "0002"))
-        graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_a", "0002")))
+        graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
         msg = (
             "Migration app_a.0001 dependencies reference nonexistent parent node "
             "('app_b', '0002')"
         )
         with self.assertRaisesMessage(NodeNotFoundError, msg):
-            graph.add_dependency("app_a.0001", ("app_a", "0001"), ("app_b", "0002"))
+            graph.add_dependency(ReferenceContext("app_a.0001", ("app_a", "0001"), ("app_b", "0002")))
 
     def test_missing_child_nodes(self):
         """
@@ -259,13 +259,13 @@ class GraphTests(SimpleTestCase):
             "('app_a', '0002')"
         )
         with self.assertRaisesMessage(NodeNotFoundError, msg):
-            graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
+            graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
 
     def test_validate_consistency_missing_parent(self):
         graph = MigrationGraph()
         graph.add_node(("app_a", "0001"), None)
         graph.add_dependency(
-            "app_a.0001", ("app_a", "0001"), ("app_b", "0002"), skip_validation=True
+            ReferenceContext("app_a.0001", ("app_a", "0001"), ("app_b", "0002"), skip_validation=True)
         )
         msg = (
             "Migration app_a.0001 dependencies reference nonexistent parent node "
@@ -278,7 +278,7 @@ class GraphTests(SimpleTestCase):
         graph = MigrationGraph()
         graph.add_node(("app_b", "0002"), None)
         graph.add_dependency(
-            "app_b.0002", ("app_a", "0001"), ("app_b", "0002"), skip_validation=True
+            ReferenceContext("app_b.0002", ("app_a", "0001"), ("app_b", "0002"), skip_validation=True)
         )
         msg = (
             "Migration app_b.0002 dependencies reference nonexistent child node "
@@ -292,7 +292,7 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_a", "0001"), None)
         graph.add_node(("app_b", "0002"), None)
         graph.add_dependency(
-            "app_a.0001", ("app_a", "0001"), ("app_b", "0002"), skip_validation=True
+            ReferenceContext("app_a.0001", ("app_a", "0001"), ("app_b", "0002"), skip_validation=True)
         )
         graph.validate_consistency()
 
@@ -322,16 +322,16 @@ class GraphTests(SimpleTestCase):
             key=("app_a", "0002"), origin="app_b.0001", error_message="BAD!"
         )
         graph.add_dependency(
-            "app_a.0002", ("app_a", "0002"), ("app_a", "0001"), skip_validation=True
+            ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001"), skip_validation=True)
         )
         # Add some normal parent and child nodes to test dependency remapping.
         graph.add_node(("app_c", "0001"), None)
         graph.add_node(("app_b", "0001"), None)
         graph.add_dependency(
-            "app_a.0001", ("app_a", "0001"), ("app_c", "0001"), skip_validation=True
+            ReferenceContext("app_a.0001", ("app_a", "0001"), ("app_c", "0001"), skip_validation=True)
         )
         graph.add_dependency(
-            "app_b.0001", ("app_b", "0001"), ("app_a", "0002"), skip_validation=True
+            ReferenceContext("app_b.0001", ("app_b", "0001"), ("app_a", "0002"), skip_validation=True)
         )
         # Try replacing before replacement node exists.
         msg = (
@@ -371,7 +371,7 @@ class GraphTests(SimpleTestCase):
         graph = MigrationGraph()
         graph.add_node(("app_a", "0001"), None)
         graph.add_node(("app_a", "0002"), None)
-        graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
+        graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
         # Try removing replacement node before replacement node exists.
         msg = (
             "Unable to remove replacement node ('app_a', '0001_squashed_0002'). It was"
@@ -386,7 +386,7 @@ class GraphTests(SimpleTestCase):
         # Add a child node to test dependency remapping.
         graph.add_node(("app_b", "0001"), None)
         graph.add_dependency(
-            "app_b.0001", ("app_b", "0001"), ("app_a", "0001_squashed_0002")
+            ReferenceContext("app_b.0001", ("app_b", "0001"), ("app_a", "0001_squashed_0002"))
         )
         # Remove the replacement node.
         graph.remove_replacement_node(
@@ -425,14 +425,12 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_c", "0001_squashed_0002"), None)
 
         graph.add_dependency(
-            "app_b.0001", ("app_b", "0001"), ("app_c", "0001_squashed_0002")
+            ReferenceContext("app_b.0001", ("app_b", "0001"), ("app_c", "0001_squashed_0002"))
         )
-        graph.add_dependency("app_b.0002", ("app_b", "0002"), ("app_a", "0001"))
-        graph.add_dependency("app_b.0002", ("app_b", "0002"), ("app_b", "0001"))
+        graph.add_dependency(ReferenceContext("app_b.0002", ("app_b", "0002"), ("app_a", "0001")))
+        graph.add_dependency(ReferenceContext("app_b.0002", ("app_b", "0002"), ("app_b", "0001")))
         graph.add_dependency(
-            "app_c.0001_squashed_0002",
-            ("app_c", "0001_squashed_0002"),
-            ("app_b", "0002"),
+            ReferenceContext("app_c.0001_squashed_0002", ("app_c", "0001_squashed_0002"), ("app_b", "0002"))
         )
 
         with self.assertRaises(CircularDependencyError):
@@ -447,9 +445,9 @@ class GraphTests(SimpleTestCase):
         graph.add_node(("app_a", "0003"), None)
         graph.add_node(("app_b", "0001"), None)
         graph.add_node(("app_b", "0002"), None)
-        graph.add_dependency("app_a.0002", ("app_a", "0002"), ("app_a", "0001"))
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_a", "0002"))
-        graph.add_dependency("app_a.0003", ("app_a", "0003"), ("app_b", "0002"))
+        graph.add_dependency(ReferenceContext("app_a.0002", ("app_a", "0002"), ("app_a", "0001")))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_a", "0002")))
+        graph.add_dependency(ReferenceContext("app_a.0003", ("app_a", "0003"), ("app_b", "0002")))
 
         self.assertEqual(str(graph), "Graph: 5 nodes, 3 edges")
         self.assertEqual(repr(graph), "<MigrationGraph: nodes=5, edges=3>")
