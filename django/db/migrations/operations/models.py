@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.migrations.operations.base import Operation, OperationCategory
 from django.db.migrations.state import ModelState
-from django.db.migrations.utils import field_references, resolve_relation
+from django.db.migrations.utils import field_references, resolve_relation, ReferenceContext
 from django.db.models.options import normalize_together
 from django.utils.functional import cached_property
 
@@ -128,9 +128,12 @@ class CreateModel(ModelOperation):
 
         # Check we have no FKs/M2Ms with it
         for _name, field in self.fields:
-            if field_references(
-                (app_label, self.name_lower), field, reference_model_tuple
-            ):
+            context = ReferenceContext(
+                (app_label, self.name_lower), 
+                field, 
+                reference_model_tuple
+            )
+            if field_references(context):
                 return True
         return False
 

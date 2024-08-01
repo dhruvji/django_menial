@@ -1,4 +1,4 @@
-from django.db.migrations.utils import field_references
+from django.db.migrations.utils import field_references, ReferenceContext
 from django.db.models import NOT_PROVIDED
 from django.utils.functional import cached_property
 
@@ -33,13 +33,12 @@ class FieldOperation(Operation):
         if name_lower == self.model_name_lower:
             return True
         if self.field:
-            return bool(
-                field_references(
-                    (app_label, self.model_name_lower),
-                    self.field,
-                    (app_label, name_lower),
-                )
+            context = ReferenceContext(
+                (app_label, self.model_name_lower),
+                self.field,
+                (app_label, name_lower),
             )
+            return bool(field_references(context))
         return False
 
     def references_field(self, model_name, name, app_label):
@@ -57,14 +56,13 @@ class FieldOperation(Operation):
         # Check if this operation remotely references the field.
         if self.field is None:
             return False
-        return bool(
-            field_references(
-                (app_label, self.model_name_lower),
-                self.field,
-                (app_label, model_name_lower),
-                name,
-            )
+        context = ReferenceContext(
+            (app_label, self.model_name_lower),
+            self.field,
+            (app_label, model_name_lower),
+            name,
         )
+        return bool(field_references(context))
 
     def reduce(self, operation, app_label):
         return super().reduce(operation, app_label) or not operation.references_field(

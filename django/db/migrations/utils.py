@@ -49,14 +49,15 @@ def resolve_relation(model, app_label=None, model_name=None):
         return app_label, model.lower()
     return model._meta.app_label, model._meta.model_name
 
+class ReferenceContext:
+    def __init__(self, model_tuple, field, reference_model_tuple, reference_field_name=None, reference_field=None):
+        self.model_tuple = model_tuple
+        self.field = field
+        self.reference_model_tuple = reference_model_tuple
+        self.reference_field_name = reference_field_name
+        self.reference_field = reference_field
 
-def field_references(
-    model_tuple,
-    field,
-    reference_model_tuple,
-    reference_field_name=None,
-    reference_field=None,
-):
+def field_references(context: ReferenceContext):
     """
     Return either False or a FieldReference if `field` references provided
     context.
@@ -66,15 +67,15 @@ def field_references(
     incurs. This should not be an issue when this function is used to determine
     whether or not an optimization can take place.
     """
-    remote_field = field.remote_field
+    remote_field = context.field.remote_field
     if not remote_field:
         return False
     references_to = None
     references_through = None
-    if resolve_relation(remote_field.model, *model_tuple) == reference_model_tuple:
-        to_fields = getattr(field, "to_fields", None)
+    if resolve_relation(remote_field.model, *context.model_tuple) == context.reference_model_tuple:
+        to_fields = getattr(context.field, "to_fields", None)
         if (
-            reference_field_name is None
+            context.reference_field_name is None
             or
             # Unspecified to_field(s).
             to_fields is None
@@ -82,24 +83,24 @@ def field_references(
             # Reference to primary key.
             (
                 None in to_fields
-                and (reference_field is None or reference_field.primary_key)
+                and (context.reference_field is None or context.reference_field.primary_key)
             )
             or
             # Reference to field.
-            reference_field_name in to_fields
+            context.reference_field_name in to_fields
         ):
             references_to = (remote_field, to_fields)
     through = getattr(remote_field, "through", None)
-    if through and resolve_relation(through, *model_tuple) == reference_model_tuple:
+    if through and resolve_relation(through, *context.model_tuple) == context.reference_model_tuple:
         through_fields = remote_field.through_fields
         if (
-            reference_field_name is None
+            context.reference_field_name is None
             or
             # Unspecified through_fields.
             through_fields is None
             or
             # Reference to field.
-            reference_field_name in through_fields
+            context.reference_field_name in through_fields
         ):
             references_through = (remote_field, through_fields)
     if not (references_to or references_through):
@@ -117,9 +118,8 @@ def get_references(state, model_tuple, field_tuple=()):
     """
     for state_model_tuple, model_state in state.models.items():
         for name, field in model_state.fields.items():
-            reference = field_references(
-                state_model_tuple, field, model_tuple, *field_tuple
-            )
+            context = ReferenceContext(state_model_tuple, field, model_tuple, *field_tuple)
+            reference = field_references(context)
             if reference:
                 yield model_state, name, field, reference
 
