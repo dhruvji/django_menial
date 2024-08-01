@@ -46,6 +46,11 @@ class SuspiciousFileOperation(SuspiciousOperation):
 
     pass
 
+class PathTraversal(SuspiciousOperation):
+    """A Suspicious path traversal was attempted"""
+
+    pass
+
 
 class DisallowedHost(SuspiciousOperation):
     """HTTP_HOST header contains invalid value"""

@@ -1,6 +1,7 @@
 import os
+import pathlib
 
-from django.core.exceptions import SuspiciousFileOperation
+from django.core.exceptions import SuspiciousFileOperation, PathTraversal
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, Storage
 from django.db.models import FileField
@@ -105,11 +106,11 @@ class GenerateFilenameStorageTests(SimpleTestCase):
         for file_name, path in candidates:
             msg = "Detected path traversal attempt in '%s'" % path
             with self.subTest(file_name=file_name):
-                with self.assertRaisesMessage(SuspiciousFileOperation, msg):
+                with self.assertRaisesMessage(PathTraversal, msg):
                     s.get_available_name(file_name)
-                with self.assertRaisesMessage(SuspiciousFileOperation, msg):
+                with self.assertRaisesMessage(PathTraversal, msg):
                     s_overwrite.get_available_name(file_name)
-                with self.assertRaisesMessage(SuspiciousFileOperation, msg):
+                with self.assertRaisesMessage(PathTraversal, msg):
                     s.generate_filename(file_name)
 
     def test_filefield_dangerous_filename(self):
@@ -130,7 +131,7 @@ class GenerateFilenameStorageTests(SimpleTestCase):
     def test_filefield_dangerous_filename_dot_segments(self):
         f = FileField(upload_to="some/folder/")
         msg = "Detected path traversal attempt in 'some/folder/../path'"
-        with self.assertRaisesMessage(SuspiciousFileOperation, msg):
+        with self.assertRaisesMessage(PathTraversal, msg):
             f.generate_filename(None, "../path")
 
     def test_filefield_generate_filename_absolute_path(self):
@@ -142,7 +143,7 @@ class GenerateFilenameStorageTests(SimpleTestCase):
         for file_name in candidates:
             msg = f"Detected path traversal attempt in '{file_name}'"
             with self.subTest(file_name=file_name):
-                with self.assertRaisesMessage(SuspiciousFileOperation, msg):
+                with self.assertRaisesMessage(PathTraversal, msg):
                     f.generate_filename(None, file_name)
 
     def test_filefield_generate_filename(self):
@@ -198,7 +199,7 @@ class GenerateFilenameStorageTests(SimpleTestCase):
         for file_name in candidates:
             msg = f"Detected path traversal attempt in '/tmp/{file_name}'"
             with self.subTest(file_name=file_name):
-                with self.assertRaisesMessage(SuspiciousFileOperation, msg):
+                with self.assertRaisesMessage(PathTraversal, msg):
                     f.generate_filename(None, file_name)
 
     def test_filefield_generate_filename_upload_to_dangerous_filename(self):

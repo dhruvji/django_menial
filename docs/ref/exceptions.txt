@@ -88,6 +88,7 @@ Django core exception classes are defined in ``django.core.exceptions``.
     * ``DisallowedModelAdminToField``
     * ``DisallowedRedirect``
     * ``InvalidSessionKey``
+    * ``PathTraversal``
     * ``RequestDataTooBig``
     * ``SuspiciousFileOperation``
     * ``SuspiciousMultipartForm``

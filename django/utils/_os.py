@@ -3,7 +3,7 @@ import tempfile
 from os.path import abspath, dirname, join, normcase, sep
 from pathlib import Path
 
-from django.core.exceptions import SuspiciousFileOperation
+from django.core.exceptions import PathTraversal
 
 
 def safe_join(base, *paths):
@@ -11,7 +11,7 @@ def safe_join(base, *paths):
     Join one or more path components to the base path component intelligently.
     Return a normalized, absolute version of the final path.
 
-    Raise SuspiciousFileOperation if the final path isn't located inside of the
+    Raise PathTraversal if the final path isn't located inside of the
     base path component.
     """
     final_path = abspath(join(base, *paths))
@@ -28,7 +28,7 @@ def safe_join(base, *paths):
         and normcase(final_path) != normcase(base_path)
         and dirname(normcase(base_path)) != normcase(base_path)
     ):
-        raise SuspiciousFileOperation(
+        raise PathTraversal(
             "The joined path ({}) is located outside of the base path "
             "component ({})".format(final_path, base_path)
         )

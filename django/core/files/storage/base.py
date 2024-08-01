@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from django.core.exceptions import SuspiciousFileOperation
+from django.core.exceptions import SuspiciousFileOperation, PathTraversal
 from django.core.files import File
 from django.core.files.utils import validate_file_name
 from django.utils.crypto import get_random_string
@@ -80,7 +80,7 @@ class Storage:
         name = str(name).replace("\\", "/")
         dir_name, file_name = os.path.split(name)
         if ".." in pathlib.PurePath(dir_name).parts:
-            raise SuspiciousFileOperation(
+            raise PathTraversal(
                 "Detected path traversal attempt in '%s'" % dir_name
             )
         validate_file_name(file_name)
@@ -123,7 +123,7 @@ class Storage:
         # `filename` may include a path as returned by FileField.upload_to.
         dirname, filename = os.path.split(filename)
         if ".." in pathlib.PurePath(dirname).parts:
-            raise SuspiciousFileOperation(
+            raise PathTraversal(
                 "Detected path traversal attempt in '%s'" % dirname
             )
         return os.path.normpath(os.path.join(dirname, self.get_valid_name(filename)))
