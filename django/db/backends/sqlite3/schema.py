@@ -5,9 +5,10 @@ from django.apps.registry import Apps
 from django.db import NotSupportedError
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.backends.ddl_references import Statement
-from django.db.backends.utils import strip_quotes
+from django.db.backends.utils import ConverterToString
 from django.db.models import NOT_PROVIDED, UniqueConstraint
 
+converter = ConverterToString()
 
 class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
     sql_delete_table = "DROP TABLE %(table)s"
@@ -220,7 +221,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         body_copy = copy.deepcopy(body)
         meta_contents = {
             "app_label": model._meta.app_label,
-            "db_table": "new__%s" % strip_quotes(model._meta.db_table),
+            "db_table": "new__%s" % converter.strip_quotes(model._meta.db_table),
             "unique_together": unique_together,
             "indexes": indexes,
             "constraints": constraints,

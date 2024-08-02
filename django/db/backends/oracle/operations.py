@@ -5,7 +5,7 @@ from functools import lru_cache
 from django.conf import settings
 from django.db import DatabaseError, NotSupportedError
 from django.db.backends.base.operations import BaseDatabaseOperations
-from django.db.backends.utils import split_tzname_delta, strip_quotes, truncate_name
+from django.db.backends.utils import split_tzname_delta, ConverterToString
 from django.db.models import AutoField, Exists, ExpressionWrapper, Lookup
 from django.db.models.expressions import RawSQL
 from django.db.models.sql.where import WhereNode
@@ -68,6 +68,10 @@ END;
         "SmallAutoField": "NUMBER(5)",
         "TextField": cast_char_field_without_max_length,
     }
+    
+    def __init__(self, connection):
+        super().__init__(connection)
+        self.converter = ConverterToString()
 
     def cache_key_culling_sql(self):
         cache_key = self.quote_name("cache_key")
@@ -342,7 +346,7 @@ END;
         return statement
 
     def last_insert_id(self, cursor, table_name, pk_name):
-        sq_name = self._get_sequence_name(cursor, strip_quotes(table_name), pk_name)
+        sq_name = self._get_sequence_name(cursor, self.converter.strip_quotes(table_name), pk_name)
         cursor.execute('"%s".currval' % sq_name)
         return cursor.fetchone()[0]
 
@@ -379,7 +383,7 @@ END;
         # always defaults to uppercase.
         # We simplify things by making Oracle identifiers always uppercase.
         if not name.startswith('"') and not name.endswith('"'):
-            name = '"%s"' % truncate_name(name, self.max_name_length())
+            name = '"%s"' % self.converter.truncate_name(name, self.max_name_length())
         # Oracle puts the query text into a (query % args) construct, so % signs
         # in names need to be escaped. The '%%' will be collapsed back to '%' at
         # that stage so we aren't really making the name longer here.
@@ -537,8 +541,8 @@ END;
                 "no_autofield_sequence_name": no_autofield_sequence_name,
                 "table": table,
                 "column": column,
-                "table_name": strip_quotes(table),
-                "column_name": strip_quotes(column),
+                "table_name": self.converter.strip_quotes(table),
+                "column_name": self.converter.strip_quotes(column),
                 "suffix": self.connection.features.bare_select_suffix,
             }
             sql.append(query)
@@ -561,8 +565,8 @@ END;
                             "no_autofield_sequence_name": no_autofield_sequence_name,
                             "table": table,
                             "column": column,
-                            "table_name": strip_quotes(table),
-                            "column_name": strip_quotes(column),
+                            "table_name": self.converter.strip_quotes(table),
+                            "column_name": self.converter.strip_quotes(column),
                             "suffix": self.connection.features.bare_select_suffix,
                         }
                     )
@@ -656,7 +660,7 @@ END;
         AutoFields that aren't Oracle identity columns.
         """
         name_length = self.max_name_length() - 3
-        return "%s_SQ" % truncate_name(strip_quotes(table), name_length).upper()
+        return "%s_SQ" % self.converter.truncate_name(self.converter.strip_quotes(table), name_length).upper()
 
     def _get_sequence_name(self, cursor, table, pk_name):
         cursor.execute(

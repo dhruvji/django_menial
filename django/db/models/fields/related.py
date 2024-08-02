@@ -41,6 +41,8 @@ from .reverse_related import ForeignObjectRel, ManyToManyRel, ManyToOneRel, OneT
 
 RECURSIVE_RELATIONSHIP_CONSTANT = "self"
 
+converter = utils.ConverterToString()
+
 
 def resolve_relation(scope_model, relation):
     """
@@ -1834,8 +1836,8 @@ class ManyToManyField(RelatedField):
         elif self.db_table:
             return self.db_table
         else:
-            m2m_table_name = "%s_%s" % (utils.strip_quotes(opts.db_table), self.name)
-            return utils.truncate_name(m2m_table_name, connection.ops.max_name_length())
+            m2m_table_name = "%s_%s" % (converter.strip_quotes(opts.db_table), self.name)
+            return converter.truncate_name(m2m_table_name, connection.ops.max_name_length())
 
     def _get_m2m_attr(self, related, attr):
         """

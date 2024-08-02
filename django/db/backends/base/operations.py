@@ -8,7 +8,7 @@ import sqlparse
 
 from django.conf import settings
 from django.db import NotSupportedError, transaction
-from django.db.backends import utils
+from django.db.backends.utils import ConverterToString
 from django.db.models.expressions import Col
 from django.utils import timezone
 from django.utils.deprecation import RemovedInDjango60Warning
@@ -61,6 +61,7 @@ class BaseDatabaseOperations:
     def __init__(self, connection):
         self.connection = connection
         self._cache = None
+        self.converter = ConverterToString()
 
     def autoinc_sql(self, table, column):
         """
@@ -585,7 +586,7 @@ class BaseDatabaseOperations:
         Transform a decimal.Decimal value to an object compatible with what is
         expected by the backend driver for decimal (numeric) columns.
         """
-        return utils.format_number(value, max_digits, decimal_places)
+        return self.converter.format_number(value, max_digits, decimal_places)
 
     def adapt_ipaddressfield_value(self, value):
         """

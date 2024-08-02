@@ -17,7 +17,7 @@ from django.db import (
     models,
 )
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-from django.db.backends.utils import truncate_name
+from django.db.backends.utils import ConverterToString
 from django.db.migrations.exceptions import InconsistentMigrationHistory
 from django.db.migrations.recorder import MigrationRecorder
 from django.test import TestCase, override_settings, skipUnlessDBFeature
@@ -1142,7 +1142,8 @@ class MigrateTests(MigrationTestBase):
         stdout = stdout.getvalue()
         self.assertIn("Synchronize unmigrated apps: unmigrated_app_syncdb", stdout)
         self.assertIn("Creating tables...", stdout)
-        table_name = truncate_name(
+        converter = ConverterToString()
+        table_name = converter.struncate_name(
             "unmigrated_app_syncdb_classroom", connection.ops.max_name_length()
         )
         self.assertIn("Creating table %s" % table_name, stdout)

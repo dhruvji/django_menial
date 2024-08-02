@@ -1,6 +1,6 @@
 from types import NoneType
 
-from django.db.backends.utils import names_digest, split_identifier
+from django.db.backends.utils import ConverterToString
 from django.db.models.expressions import Col, ExpressionList, F, Func, OrderBy
 from django.db.models.functions import Collate
 from django.db.models.query_utils import Q
@@ -163,7 +163,8 @@ class Index:
         (8 chars) and unique hash + suffix (10 chars). Each part is made to
         fit its size by truncating the excess length.
         """
-        _, table_name = split_identifier(model._meta.db_table)
+        converter = ConverterToString()
+        _, table_name = converter.split_identifier(model._meta.db_table)
         column_names = [
             model._meta.get_field(field_name).column
             for field_name, order in self.fields_orders
@@ -180,7 +181,7 @@ class Index:
         self.name = "%s_%s_%s" % (
             table_name[:11],
             column_names[0][:7],
-            "%s_%s" % (names_digest(*hash_data, length=6), self.suffix),
+            "%s_%s" % (converter.names_digest(*hash_data, length=6), self.suffix),
         )
         if len(self.name) > self.max_name_length:
             raise ValueError(

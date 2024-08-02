@@ -265,78 +265,77 @@ def typecast_timestamp(s):  # does NOT store time zone information
 # Converters from Python to database (string) #
 ###############################################
 
+class ConverterToString:
+    def __init__(self):
+        self.hash_algorithm = hashlib.md5
 
-def split_identifier(identifier):
-    """
-    Split an SQL identifier into a two element tuple of (namespace, name).
+    def split_identifier(self, identifier):
+        """
+        Split an SQL identifier into a two-element tuple of (namespace, name).
 
-    The identifier could be a table, column, or sequence name might be prefixed
-    by a namespace.
-    """
-    try:
-        namespace, name = identifier.split('"."')
-    except ValueError:
-        namespace, name = "", identifier
-    return namespace.strip('"'), name.strip('"')
+        The identifier could be a table, column, or sequence name that might be prefixed
+        by a namespace.
+        """
+        try:
+            namespace, name = identifier.split('"."')
+        except ValueError:
+            namespace, name = "", identifier
+        return namespace.strip('"'), name.strip('"')
 
+    def truncate_name(self, identifier, length=None, hash_len=4):
+        """
+        Shorten an SQL identifier to a repeatable mangled version with the given
+        length.
 
-def truncate_name(identifier, length=None, hash_len=4):
-    """
-    Shorten an SQL identifier to a repeatable mangled version with the given
-    length.
+        If a quote stripped name contains a namespace, e.g. USERNAME"."TABLE,
+        truncate the table portion only.
+        """
+        namespace, name = self.split_identifier(identifier)
 
-    If a quote stripped name contains a namespace, e.g. USERNAME"."TABLE,
-    truncate the table portion only.
-    """
-    namespace, name = split_identifier(identifier)
+        if length is None or len(name) <= length:
+            return identifier
 
-    if length is None or len(name) <= length:
-        return identifier
-
-    digest = names_digest(name, length=hash_len)
-    return "%s%s%s" % (
-        '%s"."' % namespace if namespace else "",
-        name[: length - hash_len],
-        digest,
-    )
-
-
-def names_digest(*args, length):
-    """
-    Generate a 32-bit digest of a set of arguments that can be used to shorten
-    identifying names.
-    """
-    h = md5(usedforsecurity=False)
-    for arg in args:
-        h.update(arg.encode())
-    return h.hexdigest()[:length]
-
-
-def format_number(value, max_digits, decimal_places):
-    """
-    Format a number into a string with the requisite number of digits and
-    decimal places.
-    """
-    if value is None:
-        return None
-    context = decimal.getcontext().copy()
-    if max_digits is not None:
-        context.prec = max_digits
-    if decimal_places is not None:
-        value = value.quantize(
-            decimal.Decimal(1).scaleb(-decimal_places), context=context
+        digest = self.names_digest(name, length=hash_len)
+        return "%s%s%s" % (
+            '%s"."' % namespace if namespace else "",
+            name[: length - hash_len],
+            digest,
         )
-    else:
-        context.traps[decimal.Rounded] = 1
-        value = context.create_decimal(value)
-    return "{:f}".format(value)
 
+    def names_digest(self, *args, length):
+        """
+        Generate a 32-bit digest of a set of arguments that can be used to shorten
+        identifying names.
+        """
+        h = self.hash_algorithm(usedforsecurity=False)
+        for arg in args:
+            h.update(arg.encode())
+        return h.hexdigest()[:length]
 
-def strip_quotes(table_name):
-    """
-    Strip quotes off of quoted table names to make them safe for use in index
-    names, sequence names, etc. For example '"USER"."TABLE"' (an Oracle naming
-    scheme) becomes 'USER"."TABLE'.
-    """
-    has_quotes = table_name.startswith('"') and table_name.endswith('"')
-    return table_name[1:-1] if has_quotes else table_name
+    def format_number(self, value, max_digits, decimal_places):
+        """
+        Format a number into a string with the requisite number of digits and
+        decimal places.
+        """
+        if value is None:
+            return None
+        context = decimal.getcontext().copy()
+        if max_digits is not None:
+            context.prec = max_digits
+        if decimal_places is not None:
+            value = value.quantize(
+                decimal.Decimal(1).scaleb(-decimal_places), context=context
+            )
+        else:
+            context.traps[decimal.Rounded] = 1
+            value = context.create_decimal(value)
+        return "{:f}".format(value)
+
+    def strip_quotes(self, table_name):
+        """
+        Strip quotes off of quoted table names to make them safe for use in index
+        names, sequence names, etc. For example '"USER"."TABLE"' (an Oracle naming
+        scheme) becomes 'USER"."TABLE'.
+        """
+        has_quotes = table_name.startswith('"') and table_name.endswith('"')
+        return table_name[1:-1] if has_quotes else table_name

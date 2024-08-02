@@ -4,10 +4,8 @@ from decimal import Decimal, Rounded
 
 from django.db import NotSupportedError, connection
 from django.db.backends.utils import (
-    format_number,
-    split_identifier,
+    ConverterToString,
     split_tzname_delta,
-    truncate_name,
 )
 from django.test import (
     SimpleTestCase,
@@ -18,35 +16,38 @@ from django.test import (
 
 
 class TestUtils(SimpleTestCase):
+    def setUp(self):
+        self.converter = ConverterToString()  # Instantiate the ConverterToString class
+
     def test_truncate_name(self):
-        self.assertEqual(truncate_name("some_table", 10), "some_table")
-        self.assertEqual(truncate_name("some_long_table", 10), "some_la38a")
-        self.assertEqual(truncate_name("some_long_table", 10, 3), "some_loa38")
-        self.assertEqual(truncate_name("some_long_table"), "some_long_table")
+        self.assertEqual(self.converter.truncate_name("some_table", 10), "some_table")
+        self.assertEqual(self.converter.truncate_name("some_long_table", 10), "some_la38a")
+        self.assertEqual(self.converter.truncate_name("some_long_table", 10, 3), "some_loa38")
+        self.assertEqual(self.converter.truncate_name("some_long_table"), "some_long_table")
         # "user"."table" syntax
         self.assertEqual(
-            truncate_name('username"."some_table', 10), 'username"."some_table'
+            self.converter.truncate_name('username"."some_table', 10), 'username"."some_table'
         )
         self.assertEqual(
-            truncate_name('username"."some_long_table', 10), 'username"."some_la38a'
+            self.converter.truncate_name('username"."some_long_table', 10), 'username"."some_la38a'
         )
         self.assertEqual(
-            truncate_name('username"."some_long_table', 10, 3), 'username"."some_loa38'
+            self.converter.truncate_name('username"."some_long_table', 10, 3), 'username"."some_loa38'
         )
 
     def test_split_identifier(self):
-        self.assertEqual(split_identifier("some_table"), ("", "some_table"))
-        self.assertEqual(split_identifier('"some_table"'), ("", "some_table"))
+        self.assertEqual(self.converter.split_identifier("some_table"), ("", "some_table"))
+        self.assertEqual(self.converter.split_identifier('"some_table"'), ("", "some_table"))
         self.assertEqual(
-            split_identifier('namespace"."some_table'), ("namespace", "some_table")
+            self.converter.split_identifier('namespace"."some_table'), ("namespace", "some_table")
         )
         self.assertEqual(
-            split_identifier('"namespace"."some_table"'), ("namespace", "some_table")
+            self.converter.split_identifier('"namespace"."some_table"'), ("namespace", "some_table")
         )
 
     def test_format_number(self):
         def equal(value, max_d, places, result):
-            self.assertEqual(format_number(Decimal(value), max_d, places), result)
+            self.assertEqual(self.converter.format_number(Decimal(value), max_d, places), result)
 
         equal("0", 12, 3, "0.000")
         equal("0", 12, 8, "0.00000000")

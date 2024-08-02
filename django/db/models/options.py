@@ -170,7 +170,7 @@ class Options:
 
     def contribute_to_class(self, cls, name):
         from django.db import connection
-        from django.db.backends.utils import truncate_name
+        from django.db.backends.utils import ConverterToString
 
         cls._meta = self
         self.model = cls
@@ -226,8 +226,9 @@ class Options:
 
         # If the db_table wasn't provided, use the app_label + model_name.
         if not self.db_table:
+            converter = ConverterToString()
             self.db_table = "%s_%s" % (self.app_label, self.model_name)
-            self.db_table = truncate_name(
+            self.db_table = converter.truncate_name(
                 self.db_table, connection.ops.max_name_length()
             )
 

@@ -1,5 +1,5 @@
 from django.db import connection, models
-from django.db.backends.utils import truncate_name
+from django.db.backends.utils import ConverterToString
 from django.test import TestCase
 
 from .models.article import Article, Site
@@ -46,6 +46,7 @@ class ModelPackageTests(TestCase):
         class that are specified as dotted strings don't retain any path
         component for the field or column name.
         """
+        converter = ConverterToString()
         self.assertEqual(Article.publications.through._meta.fields[1].name, "article")
         self.assertEqual(
             Article.publications.through._meta.fields[1].get_attname_column(),
@@ -61,7 +62,7 @@ class ModelPackageTests(TestCase):
 
         self.assertEqual(
             Article._meta.get_field("publications").m2m_db_table(),
-            truncate_name(
+            converter.truncate_name(
                 "model_package_article_publications", connection.ops.max_name_length()
             ),
         )

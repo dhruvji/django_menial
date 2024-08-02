@@ -1,6 +1,6 @@
 from django.contrib.gis.db.models import GeometryField
 from django.db.backends.oracle.schema import DatabaseSchemaEditor
-from django.db.backends.utils import strip_quotes, truncate_name
+from django.db.backends.utils import ConverterToString  
 
 
 class OracleGISSchemaEditor(DatabaseSchemaEditor):
@@ -31,6 +31,7 @@ class OracleGISSchemaEditor(DatabaseSchemaEditor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry_sql = []
+        self.converter = ConverterToString()  # Instantiate the ConverterToString class
 
     def geo_quote_name(self, name):
         return self.connection.ops.geo_quote_name(name)
@@ -109,6 +110,6 @@ class OracleGISSchemaEditor(DatabaseSchemaEditor):
     def _create_spatial_index_name(self, model, field):
         # Oracle doesn't allow object names > 30 characters. Use this scheme
         # instead of self._create_index_name() for backwards compatibility.
-        return truncate_name(
-            "%s_%s_id" % (strip_quotes(model._meta.db_table), field.column), 30
+        return self.converter.truncate_name(
+            "%s_%s_id" % (self.converter.strip_quotes(model._meta.db_table), field.column), 30
         )

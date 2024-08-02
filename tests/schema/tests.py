@@ -15,7 +15,7 @@ from django.db import (
     OperationalError,
     connection,
 )
-from django.db.backends.utils import truncate_name
+from django.db.backends.utils import ConverterToString
 from django.db.models import (
     CASCADE,
     PROTECT,
@@ -2451,7 +2451,8 @@ class SchemaTests(TransactionTestCase):
         with connection.schema_editor() as editor:
             editor.alter_field(AuthorWithLongColumn, old_field, new_field, strict=True)
 
-        new_field_name = truncate_name(
+        converter = ConverterToString()
+        new_field_name = converter.truncate_name(
             new_field.column, connection.ops.max_name_length()
         )
         constraints = self.get_constraints(AuthorWithLongColumn._meta.db_table)

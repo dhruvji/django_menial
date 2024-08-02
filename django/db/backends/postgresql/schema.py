@@ -1,8 +1,9 @@
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.backends.ddl_references import IndexColumns
 from django.db.backends.postgresql.psycopg_any import sql
-from django.db.backends.utils import strip_quotes
+from django.db.backends.utils import ConverterToString
 
+converter = ConverterToString()
 
 class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
     # Setting all constraints to IMMEDIATE to allow changing data in the same
@@ -166,7 +167,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         new_internal_type = new_field.get_internal_type()
         old_internal_type = old_field.get_internal_type()
         # Make ALTER TYPE with IDENTITY make sense.
-        table = strip_quotes(model._meta.db_table)
+        table = converter.strip_quotes(model._meta.db_table)
         auto_field_types = {
             "AutoField",
             "BigAutoField",
@@ -175,7 +176,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         old_is_auto = old_internal_type in auto_field_types
         new_is_auto = new_internal_type in auto_field_types
         if new_is_auto and not old_is_auto:
-            column = strip_quotes(new_field.column)
+            column = converter.strip_quotes(new_field.column)
             return (
                 (
                     self.sql_alter_column_type
@@ -204,10 +205,10 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
                 self.sql_drop_indentity
                 % {
                     "table": self.quote_name(table),
-                    "column": self.quote_name(strip_quotes(new_field.column)),
+                    "column": self.quote_name(converter.strip_quotes(new_field.column)),
                 }
             )
-            column = strip_quotes(new_field.column)
+            column = converter.strip_quotes(new_field.column)
             fragment, _ = super()._alter_column_type_sql(
                 model, old_field, new_field, new_type, old_collation, new_collation
             )
@@ -229,7 +230,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
             fragment, _ = super()._alter_column_type_sql(
                 model, old_field, new_field, new_type, old_collation, new_collation
             )
-            column = strip_quotes(new_field.column)
+            column = converter.strip_quotes(new_field.column)
             db_types = {
                 "AutoField": "integer",
                 "BigAutoField": "bigint",

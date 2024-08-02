@@ -12,7 +12,7 @@ from django.db.backends.ddl_references import (
     Statement,
     Table,
 )
-from django.db.backends.utils import names_digest, split_identifier, truncate_name
+from django.db.backends.utils import ConverterToString
 from django.db.models import NOT_PROVIDED, Deferrable, Index
 from django.db.models.sql import Query
 from django.db.transaction import TransactionManagementError, atomic
@@ -151,6 +151,7 @@ class BaseDatabaseSchemaEditor:
         if self.collect_sql:
             self.collected_sql = []
         self.atomic_migration = self.connection.features.can_rollback_ddl and atomic
+        self.converter = ConverterToString()
 
     # State-managing methods
 
@@ -728,7 +729,7 @@ class BaseDatabaseSchemaEditor:
                 to_column = field.remote_field.model._meta.get_field(
                     field.remote_field.field_name
                 ).column
-                namespace, _ = split_identifier(model._meta.db_table)
+                namespace, _ = self.converter.split_identifier(model._meta.db_table)
                 definition += " " + self.sql_create_column_inline_fk % {
                     "name": self._fk_constraint_name(model, field, constraint_suffix),
                     "namespace": (
@@ -1477,9 +1478,9 @@ class BaseDatabaseSchemaEditor:
         The name is divided into 3 parts: the table name, the column names,
         and a unique digest and suffix.
         """
-        _, table_name = split_identifier(table_name)
+        _, table_name = self.converter.split_identifier(table_name)
         hash_suffix_part = "%s%s" % (
-            names_digest(table_name, *column_names, length=8),
+            self.converter.names_digest(table_name, *column_names, length=8),
             suffix,
         )
         max_length = self.connection.ops.max_name_length() or 200
@@ -1724,7 +1725,7 @@ class BaseDatabaseSchemaEditor:
         return ForeignKeyName(
             model._meta.db_table,
             [field.column],
-            split_identifier(field.target_field.model._meta.db_table)[1],
+            self.converter.split_identifier(field.target_field.model._meta.db_table)[1],
             [field.target_field.column],
             suffix,
             create_fk_name,
@@ -1956,7 +1957,7 @@ class BaseDatabaseSchemaEditor:
             column_names = [
                 (
                     self.connection.introspection.identifier_converter(
-                        truncate_name(name, self.connection.ops.max_name_length())
+                        self.converter.truncate_name(name, self.connection.ops.max_name_length())
                     )
                     if self.connection.features.truncates_names
                     else self.connection.introspection.identifier_converter(name)
