@@ -1,6 +1,6 @@
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.models import NOT_PROVIDED, F, UniqueConstraint
-from django.db.models.constants import LOOKUP_SEP
+from django.db.models.base import LOOKUP_SEP
 
 
 class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):

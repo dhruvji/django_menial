@@ -3,6 +3,8 @@ import inspect
 import warnings
 from functools import partialmethod
 from itertools import chain
+from enum import Enum
+
 
 from asgiref.sync import sync_to_async
 
@@ -27,7 +29,6 @@ from django.db import (
     transaction,
 )
 from django.db.models import NOT_PROVIDED, ExpressionWrapper, IntegerField, Max, Value
-from django.db.models.constants import LOOKUP_SEP
 from django.db.models.deletion import CASCADE, Collector
 from django.db.models.expressions import DatabaseDefault
 from django.db.models.fields.related import (
@@ -54,6 +55,13 @@ from django.utils.hashable import make_hashable
 from django.utils.text import capfirst, get_text_list
 from django.utils.translation import gettext_lazy as _
 
+# Separator used to split filter strings apart.
+LOOKUP_SEP = "__"
+
+
+class OnConflict(Enum):
+    IGNORE = "ignore"
+    UPDATE = "update"
 
 class Deferred:
     def __repr__(self):

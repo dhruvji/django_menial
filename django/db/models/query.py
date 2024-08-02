@@ -21,7 +21,7 @@ from django.db import (
     transaction,
 )
 from django.db.models import AutoField, DateField, DateTimeField, Field, sql
-from django.db.models.constants import LOOKUP_SEP, OnConflict
+from django.db.models.base import LOOKUP_SEP, OnConflict
 from django.db.models.deletion import Collector
 from django.db.models.expressions import Case, F, Value, When
 from django.db.models.functions import Cast, Trunc

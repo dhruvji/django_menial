@@ -40,7 +40,7 @@ from django.core.exceptions import (
 )
 from django.core.paginator import Paginator
 from django.db import models, router, transaction
-from django.db.models.constants import LOOKUP_SEP
+from django.db.models.base import LOOKUP_SEP
 from django.forms.formsets import DELETION_FIELD_NAME, all_valid
 from django.forms.models import (
     BaseInlineFormSet,

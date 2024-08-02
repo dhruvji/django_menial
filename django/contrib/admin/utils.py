@@ -8,7 +8,7 @@ from operator import or_
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import EMPTY_VALUES
 from django.db import models, router
-from django.db.models.constants import LOOKUP_SEP
+from django.db.models.base import LOOKUP_SEP
 from django.db.models.deletion import Collector
 from django.forms.utils import pretty_name
 from django.urls import NoReverseMatch, reverse

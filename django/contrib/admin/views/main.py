@@ -30,7 +30,7 @@ from django.core.exceptions import (
 )
 from django.core.paginator import InvalidPage
 from django.db.models import F, Field, ManyToOneRel, OrderBy
-from django.db.models.constants import LOOKUP_SEP
+from django.db.models.base import LOOKUP_SEP
 from django.db.models.expressions import Combinable
 from django.urls import reverse
 from django.utils.deprecation import RemovedInDjango60Warning

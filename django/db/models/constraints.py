@@ -5,7 +5,7 @@ from types import NoneType
 from django.core import checks
 from django.core.exceptions import FieldDoesNotExist, FieldError, ValidationError
 from django.db import connections
-from django.db.models.constants import LOOKUP_SEP
+from django.db.models.base import LOOKUP_SEP
 from django.db.models.expressions import Exists, ExpressionList, F, RawSQL
 from django.db.models.indexes import IndexExpression
 from django.db.models.lookups import Exact, IsNull

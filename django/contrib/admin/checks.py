@@ -8,7 +8,7 @@ from django.contrib.admin.utils import NotRelationField, flatten, get_fields_fro
 from django.core import checks
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
-from django.db.models.constants import LOOKUP_SEP
+from django.db.models.base import LOOKUP_SEP
 from django.db.models.expressions import Combinable
 from django.forms.models import BaseModelForm, BaseModelFormSet, _get_foreign_key
 from django.template import engines

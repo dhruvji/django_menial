@@ -11,7 +11,7 @@ from django.db.backends.postgresql.psycopg_any import (
     mogrify,
 )
 from django.db.backends.utils import split_tzname_delta
-from django.db.models.constants import OnConflict
+from django.db.models.base import OnConflict
 from django.db.models.functions import Cast
 from django.utils.regex_helper import _lazy_re_compile
 
