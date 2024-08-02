@@ -6,7 +6,7 @@ Requires mysqlclient: https://pypi.org/project/mysqlclient/
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
-from django.db.backends import utils as backend_utils
+from django.db.backends.utils import ConverterToPython
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.utils.asyncio import async_unsafe
 from django.utils.functional import cached_property
@@ -43,7 +43,7 @@ if version < (1, 4, 3):
 # expects time.
 django_conversions = {
     **conversions,
-    **{FIELD_TYPE.TIME: backend_utils.typecast_time},
+    **{FIELD_TYPE.TIME: ConverterToPython.typecast_time},
 }
 
 # This should match the numerical portion of the version numbers (we can treat

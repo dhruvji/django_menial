@@ -210,55 +210,66 @@ def split_tzname_delta(tzname):
 # Converters from database (string) to Python #
 ###############################################
 
+class ConverterToPython:
+    @staticmethod
+    def typecast_date(s):
+        """
+        Convert a date string (e.g., '2024-08-01') to a datetime.date object.
+        Return None if the input string is None.
+        """
+        return datetime.date(*map(int, s.split("-"))) if s else None
 
-def typecast_date(s):
-    return (
-        datetime.date(*map(int, s.split("-"))) if s else None
-    )  # return None if s is null
+    @staticmethod
+    def typecast_time(s):
+        """
+        Convert a time string (e.g., '12:34:56.789') to a datetime.time object.
+        Return None if the input string is None.
+        This does NOT store time zone information.
+        """
+        if not s:
+            return None
+        hour, minutes, seconds = s.split(":")
+        if "." in seconds:  # Check whether seconds have a fractional part
+            seconds, microseconds = seconds.split(".")
+        else:
+            microseconds = "0"
+        return datetime.time(
+            int(hour), int(minutes), int(seconds), int((microseconds + "000000")[:6])
+        )
 
-
-def typecast_time(s):  # does NOT store time zone information
-    if not s:
-        return None
-    hour, minutes, seconds = s.split(":")
-    if "." in seconds:  # check whether seconds have a fractional part
-        seconds, microseconds = seconds.split(".")
-    else:
-        microseconds = "0"
-    return datetime.time(
-        int(hour), int(minutes), int(seconds), int((microseconds + "000000")[:6])
-    )
-
-
-def typecast_timestamp(s):  # does NOT store time zone information
-    # "2005-07-29 15:48:00.590358-05"
-    # "2005-07-29 09:56:00-05"
-    if not s:
-        return None
-    if " " not in s:
-        return typecast_date(s)
-    d, t = s.split()
-    # Remove timezone information.
-    if "-" in t:
-        t, _ = t.split("-", 1)
-    elif "+" in t:
-        t, _ = t.split("+", 1)
-    dates = d.split("-")
-    times = t.split(":")
-    seconds = times[2]
-    if "." in seconds:  # check whether seconds have a fractional part
-        seconds, microseconds = seconds.split(".")
-    else:
-        microseconds = "0"
-    return datetime.datetime(
-        int(dates[0]),
-        int(dates[1]),
-        int(dates[2]),
-        int(times[0]),
-        int(times[1]),
-        int(seconds),
-        int((microseconds + "000000")[:6]),
-    )
+    @staticmethod
+    def typecast_timestamp(s):
+        """
+        Convert a timestamp string (e.g., '2024-08-01 12:34:56.789-05') to a datetime.datetime object.
+        Return None if the input string is None.
+        This does NOT store time zone information.
+        """
+        if not s:
+            return None
+        if " " not in s:
+            return ConverterToPython.typecast_date(s)
+        d, t = s.split()
+        # Remove timezone information
+        if "-" in t:
+            t, _ = t.split("-", 1)
+        elif "+" in t:
+            t, _ = t.split("+", 1)
+        dates = d.split("-")
+        times = t.split(":")
+        seconds = times[2]
+        if "." in seconds:  # Check whether seconds have a fractional part
+            seconds, microseconds = seconds.split(".")
+        else:
+            microseconds = "0"
+        return datetime.datetime(
+            int(dates[0]),
+            int(dates[1]),
+            int(dates[2]),
+            int(times[0]),
+            int(times[1]),
+            int(seconds),
+            int((microseconds + "000000")[:6]),
+        )
 
 
 ###############################################

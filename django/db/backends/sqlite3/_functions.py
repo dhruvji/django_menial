@@ -30,12 +30,12 @@ from re import search as re_search
 
 from django.db.backends.utils import (
     split_tzname_delta,
-    typecast_time,
-    typecast_timestamp,
+    ConverterToPython
 )
 from django.utils import timezone
 from django.utils.duration import duration_microseconds
 
+converter = ConverterToPython()
 
 def register(connection):
     create_deterministic_function = functools.partial(
@@ -107,7 +107,7 @@ def _sqlite_datetime_parse(dt, tzname=None, conn_tzname=None):
     if dt is None:
         return None
     try:
-        dt = typecast_timestamp(dt)
+        dt = converter.typecast_timestamp(dt)
     except (TypeError, ValueError):
         return None
     if conn_tzname:
@@ -150,7 +150,7 @@ def _sqlite_time_trunc(lookup_type, dt, tzname, conn_tzname):
     dt_parsed = _sqlite_datetime_parse(dt, tzname, conn_tzname)
     if dt_parsed is None:
         try:
-            dt = typecast_time(dt)
+            dt = converter.typecast_time(dt)
         except (ValueError, TypeError):
             return None
     else:
@@ -231,7 +231,7 @@ def _sqlite_time_extract(lookup_type, dt):
     if dt is None:
         return None
     try:
-        dt = typecast_time(dt)
+        dt = converter.typecast_time(dt)
     except (ValueError, TypeError):
         return None
     return getattr(dt, lookup_type)
@@ -242,7 +242,7 @@ def _sqlite_prepare_dtdelta_param(conn, param):
         if isinstance(param, int):
             return timedelta(0, 0, param)
         else:
-            return typecast_timestamp(param)
+            return converter.typecast_timestamp(param)
     return param
 
 
@@ -277,8 +277,8 @@ def _sqlite_format_dtdelta(connector, lhs, rhs):
 def _sqlite_time_diff(lhs, rhs):
     if lhs is None or rhs is None:
         return None
-    left = typecast_time(lhs)
-    right = typecast_time(rhs)
+    left = converter.typecast_time(lhs)
+    right = converter.typecast_time(rhs)
     return (
         (left.hour * 60 * 60 * 1000000)
         + (left.minute * 60 * 1000000)
@@ -294,8 +294,8 @@ def _sqlite_time_diff(lhs, rhs):
 def _sqlite_timestamp_diff(lhs, rhs):
     if lhs is None or rhs is None:
         return None
-    left = typecast_timestamp(lhs)
-    right = typecast_timestamp(rhs)
+    left = converter.typecast_timestamp(lhs)
+    right = converter.typecast_timestamp(rhs)
     return duration_microseconds(left - right)
 
 
